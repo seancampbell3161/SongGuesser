@@ -16,7 +16,7 @@ const FileUpload = () => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/music/upload', formData, {
+            const response = await axios.post('http://localhost:5244/api/music/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -38,7 +38,7 @@ const FileUpload = () => {
                     {tracks.map((track, index) => (
                         <div key={index}>
                             <h4>{track.name}</h4>
-                            <ReactAudioPlayer src={`http://localhost:5000/${track.url}`} controls />
+                            <ReactAudioPlayer src={`http://localhost:5244/${track.url}`} controls />
                         </div>
                     ))}
                 </div>
