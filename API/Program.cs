@@ -70,17 +70,26 @@ app.MapPost("/api/music/upload", async (HttpRequest request) =>
             result = await process.StandardOutput.ReadToEndAsync();
             error = await process.StandardError.ReadToEndAsync();
             process.WaitForExit();
-        }
-
-        if (!string.IsNullOrEmpty(error))
-        {
-            Console.WriteLine($"Error: {error}");
-            return Results.Json(new { error = $"Error processing file: {error}" }, statusCode: 500);
+            
+            if (process.ExitCode != 0)
+            {
+                // Log the error for debugging
+                Console.WriteLine($"Error: {error}");
+                return Results.Json(new { error = $"Error processing file: {error}" }, statusCode: 500);
+            }
         }
         
         Console.WriteLine($"Result: {result}");
 
-        return Results.Ok(new { message = "File uploaded and processed successfully.", downloadUrl = outputDir });
+        var trackNames = new[] { "vocals", "drums", "bass", "other" };
+        var trackUrls = trackNames.Select(name => 
+            new { name, url = Path.Combine("SeparatedTracks", Path.GetFileNameWithoutExtension(file.FileName), $"{name}.wav") }).ToList();
+
+        return Results.Ok(new 
+        { 
+            message = "File uploaded and processed successfully.", 
+            tracks = trackUrls 
+        });
     })
     .WithName("UploadFile");
 

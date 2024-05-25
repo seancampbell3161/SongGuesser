@@ -16,15 +16,13 @@ const FileUpload = () => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:5244/api/music/upload', formData, {
+            const response = await axios.post('http://localhost:5000/api/music/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
             setMessage(response.data.message);
-            const downloadUrl = response.data.downloadUrl;
-            const trackNames = ['vocals', 'drums', 'bass', 'other'];
-            setTracks(trackNames.map(name => `${downloadUrl}/${name}.wav`));
+            setTracks(response.data.tracks);
         } catch (error) {
             setMessage('Error uploading file');
         }
@@ -39,8 +37,8 @@ const FileUpload = () => {
                 <div>
                     {tracks.map((track, index) => (
                         <div key={index}>
-                            <h4>{track.split('/').pop()}</h4>
-                            <ReactAudioPlayer src={`http://localhost:5000/${track}`} controls />
+                            <h4>{track.name}</h4>
+                            <ReactAudioPlayer src={`http://localhost:5000/${track.url}`} controls />
                         </div>
                     ))}
                 </div>
