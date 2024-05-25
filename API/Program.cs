@@ -25,6 +25,20 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "SeparatedTracks")),
+    RequestPath = "/SeparatedTracks"
+});
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+    RequestPath = "/Uploads"
+});
+
 app.MapPost("/api/music/upload", async (HttpRequest request) =>
     {
         var form = await request.ReadFormAsync();
@@ -36,7 +50,7 @@ app.MapPost("/api/music/upload", async (HttpRequest request) =>
         }
 
         var uploadPath = Path.Combine("Uploads", file.FileName);
-        var outputDir = Path.Combine("SeparatedTracks", Path.GetFileNameWithoutExtension(file.FileName));
+        var outputDir = Path.Combine("SeparatedTracks");
 
         Directory.CreateDirectory(Path.GetDirectoryName(uploadPath));
         Directory.CreateDirectory(outputDir);
@@ -73,7 +87,6 @@ app.MapPost("/api/music/upload", async (HttpRequest request) =>
             
             if (process.ExitCode != 0)
             {
-                // Log the error for debugging
                 Console.WriteLine($"Error: {error}");
                 return Results.Json(new { error = $"Error processing file: {error}" }, statusCode: 500);
             }
