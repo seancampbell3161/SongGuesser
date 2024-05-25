@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Downloads\YouTube\" />
       <Folder Include="SeparatedTracks\" />
       <Folder Include="Uploads\" />
     </ItemGroup>

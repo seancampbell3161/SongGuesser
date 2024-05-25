@@ -39,6 +39,12 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/Uploads"
 });
 
+var downloadPath = Path.Combine(builder.Environment.ContentRootPath, "Downloads");
+if (!Directory.Exists(downloadPath))
+{
+    Directory.CreateDirectory(downloadPath);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
@@ -56,7 +62,7 @@ app.MapPost("/api/music/upload", async (HttpRequest request) =>
             return Results.BadRequest("No file uploaded.");
         }
 
-        var uploadPath = Path.Combine("Uploads", file.FileName);
+        var uploadPath = Path.Combine("Uploads", file.FileName.Replace(' ', '_'));
         var outputDir = Path.Combine("SeparatedTracks");
 
         Directory.CreateDirectory(Path.GetDirectoryName(uploadPath));
@@ -103,7 +109,13 @@ app.MapPost("/api/music/upload", async (HttpRequest request) =>
 
         var trackNames = new[] { "vocals", "drums", "bass", "other" };
         var trackUrls = trackNames.Select(name => 
-            new { name, url = Path.Combine("SeparatedTracks", Path.GetFileNameWithoutExtension(file.FileName), $"{name}.wav") }).ToList();
+            new 
+                { 
+                    name, 
+                    url = Path.Combine("SeparatedTracks",
+                                        Path.GetFileNameWithoutExtension(file.FileName.Replace(' ', '_')), $"{name}.wav") 
+                })
+                .ToList();
 
         return Results.Ok(new 
         { 
@@ -127,7 +139,7 @@ app.MapPost("/api/music/youtube", async (HttpRequest request) =>
         Directory.CreateDirectory(outputDir);
 
         var scriptPath = Path.Combine("scripts", "youtube_to_mp3.py");
-        var pythonPath = "/opt/anaconda3/envs/py37/bin/python3";
+        var pythonPath = "/opt/anaconda3/bin/python3";
 
         var startInfo = new ProcessStartInfo
         {
@@ -150,7 +162,6 @@ app.MapPost("/api/music/youtube", async (HttpRequest request) =>
         
             if (process.ExitCode != 0)
             {
-                // Log the error for debugging
                 Console.WriteLine($"Error: {error}");
                 return Results.Json(new { error = $"Error processing YouTube URL: {error}" }, statusCode: 500);
             }
