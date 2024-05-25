@@ -39,6 +39,13 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/Uploads"
 });
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Downloads")),
+    RequestPath = "/Downloads"
+});
+
 app.MapPost("/api/music/upload", async (HttpRequest request) =>
     {
         var form = await request.ReadFormAsync();
@@ -105,5 +112,64 @@ app.MapPost("/api/music/upload", async (HttpRequest request) =>
         });
     })
     .WithName("UploadFile");
+
+app.MapPost("/api/music/youtube", async (HttpRequest request) =>
+    {
+        var form = await request.ReadFormAsync();
+        var youtubeUrl = form["url"].ToString();
+
+        if (string.IsNullOrEmpty(youtubeUrl))
+        {
+            return Results.BadRequest("No YouTube URL provided.");
+        }
+
+        var outputDir = Path.Combine("Downloads", "YouTube");
+        Directory.CreateDirectory(outputDir);
+
+        var scriptPath = Path.Combine("scripts", "youtube_to_mp3.py");
+        var pythonPath = "/opt/anaconda3/envs/py37/bin/python3";
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = pythonPath,
+            Arguments = $"{scriptPath} \"{youtubeUrl}\" \"{outputDir}\"",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        string result;
+        string error;
+        using (var process = new Process { StartInfo = startInfo })
+        {
+            process.Start();
+            result = await process.StandardOutput.ReadToEndAsync();
+            error = await process.StandardError.ReadToEndAsync();
+            process.WaitForExit();
+        
+            if (process.ExitCode != 0)
+            {
+                // Log the error for debugging
+                Console.WriteLine($"Error: {error}");
+                return Results.Json(new { error = $"Error processing YouTube URL: {error}" }, statusCode: 500);
+            }
+        }
+
+        Console.WriteLine($"Result: {result}");
+
+        // Find the downloaded MP3 file
+        var directoryInfo = new DirectoryInfo(outputDir);
+        var file = directoryInfo.GetFiles("*.mp3").OrderByDescending(f => f.CreationTime).FirstOrDefault();
+        if (file == null)
+        {
+            return Results.NotFound("No MP3 file found.");
+        }
+
+        var fileUrl = $"/Downloads/YouTube/{file.Name}";
+
+        return Results.Ok(new { message = "YouTube video converted successfully.", url = fileUrl });
+    })
+    .WithName("ConvertYouTubeToMp3");
 
 app.Run();
