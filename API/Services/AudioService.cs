@@ -61,7 +61,7 @@ public class AudioService : IAudioService
         return new ConvertResult()
         {
             Message = "Successfully converted video to MP3",
-            Url = fileUrl
+            FilePath = fileUrl
         };
     }
 
@@ -134,13 +134,18 @@ public class AudioService : IAudioService
 
     public async Task<SeparateResult> SeparateTracksAsync(ConvertResult convertedMp3)
     {
-        if (convertedMp3?.Url == null)
+        if (convertedMp3?.FilePath == null)
         {
             return new SeparateResult() { Error = "URL cannot be null" };
         }
 
-        var filePath = convertedMp3.Url;
-        var fileName = convertedMp3.Url.Split("/").LastOrDefault();
+        if (convertedMp3.FilePath.StartsWith("/"))
+        {
+            convertedMp3.FilePath = convertedMp3.FilePath.Substring(1);
+        }
+
+        var filePath = convertedMp3.FilePath;
+        var fileName = convertedMp3.FilePath.Split("/").LastOrDefault();
         
         var outputDir = Path.Combine("SeparatedTracks");
         
@@ -161,6 +166,22 @@ public class AudioService : IAudioService
             Environment =
                 { { "PATH", $"{Environment.GetEnvironmentVariable("PATH")}:{Path.GetDirectoryName(ffmpegPath)}" } }
         };
+        
+        // wait for mp3 file to download
+        // const int maxRetries = 20;
+        // const int delayMilliseconds = 3000;
+        // int retryCount = 0;
+        //
+        // while (!File.Exists(convertedMp3.FilePath) && retryCount < maxRetries)
+        // {
+        //     await Task.Delay(delayMilliseconds);
+        //     retryCount++;
+        // }
+
+        // if (!File.Exists(convertedMp3.FilePath))
+        // {
+        //     return new SeparateResult() { Error = "MP3 file not found after waiting." };
+        // }
 
         string result;
         string error;
@@ -188,8 +209,8 @@ public class AudioService : IAudioService
             new Track
                 { 
                     Name = name, 
-                    Url = Path.Combine("SeparatedTracks",
-                                        Path.GetFileNameWithoutExtension(fileName), $"{name}.wav") 
+                    Url = Path.Combine("/SeparatedTracks",
+                                        Path.GetFileNameWithoutExtension(fileName), $"{name}.wav")
                 })
                 .ToList();
 

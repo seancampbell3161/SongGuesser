@@ -7,10 +7,10 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>YouTube Converter</h1>
+        <h1>Enter YouTube URL</h1>
         <YouTubeConverter />
         <br />
-        <h1>Song Guesser</h1>
+        <h1>Upload</h1>
         <FileUpload />
       </header>
     </div>

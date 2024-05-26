@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,15 +40,24 @@ public class MusicController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("convert-and-separate")]
-    public async Task<IActionResult> ConvertAndSeparateAsync(string? url)
+    [HttpPost("separate-result")]
+    public async Task<IActionResult> SeparateTracksFromResultDto([FromBody] ConvertResult convertResult)
     {
-        if (string.IsNullOrWhiteSpace(url))
+        if (string.IsNullOrWhiteSpace(convertResult.FilePath)) return BadRequest("Url required");
+        
+        var result = _audioService.SeparateTracksAsync(convertResult);
+        return Ok(result);
+    }
+
+    [HttpPost("convert-and-separate")]
+    public async Task<IActionResult> ConvertAndSeparateAsync([FromBody] YouTubeRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Url))
         {
             return BadRequest("URL cannot be null");
         }
 
-        var result = _audioService.ConvertAndSeparateTracksAsync(url);
+        var result = await _audioService.ConvertAndSeparateTracksAsync(request.Url);
         return Ok(result);
     }
 }
