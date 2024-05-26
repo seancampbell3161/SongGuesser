@@ -10,7 +10,7 @@ def download_audio(youtube_url, output_dir):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+        'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s').replace(' ', '_')
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([youtube_url])

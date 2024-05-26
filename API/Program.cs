@@ -1,10 +1,13 @@
 using System.Diagnostics;
+using API.Interfaces;
+using API.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
@@ -12,6 +15,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAllOrigins",
         builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
+
+builder.Services.AddScoped<IAudioService, AudioService>();
 
 var app = builder.Build();
 
@@ -24,6 +29,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
+
+app.UseRouting();
+app.MapControllers();
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -182,5 +190,65 @@ app.MapPost("/api/music/youtube", async (HttpRequest request) =>
         return Results.Ok(new { message = "YouTube video converted successfully.", url = fileUrl });
     })
     .WithName("ConvertYouTubeToMp3");
+
+app.MapPost("/api/music/upload-and-separate", async (HttpRequest request) =>
+    {
+        var form = await request.ReadFormAsync();
+        var youtubeUrl = form["url"].ToString();
+
+        if (string.IsNullOrEmpty(youtubeUrl))
+        {
+            return Results.BadRequest("No YouTube URL provided.");
+        }
+
+        var outputDir = Path.Combine("Downloads", "YouTube");
+        var separateDir = Path.Combine("SeparatedTracks");
+        Directory.CreateDirectory(separateDir);
+
+        var scriptPath = Path.Combine("scripts", "youtube_to_spleeter.py");
+        var pythonPath = "/opt/anaconda3/envs/py37/bin/python3";
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = pythonPath,
+            Arguments = $"{scriptPath} \"{youtubeUrl}\" \"{outputDir}\" \"{separateDir}\"",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        string result;
+        string error;
+        using (var process = new Process { StartInfo = startInfo })
+        {
+            process.Start();
+            result = await process.StandardOutput.ReadToEndAsync();
+            error = await process.StandardError.ReadToEndAsync();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                Console.WriteLine($"Error: {error}");
+                return Results.Json(new { error = $"Error processing YouTube URL: {error}" }, statusCode: 500);
+            }
+        }
+
+        Console.WriteLine($"Result: {result}");
+
+        // Generate URLs for the separated tracks
+        var trackNames = new[] { "vocals", "drums", "bass", "other" };
+        var baseOutputPath =
+            Path.Combine("SeparatedTracks", Path.GetFileNameWithoutExtension(result).Replace(".mp3", ""));
+        var trackUrls = trackNames.Select(name =>
+            new { name, url = $"/SeparatedTracks/{Path.GetFileNameWithoutExtension(result)}/{name}.wav" }).ToList();
+
+        return Results.Ok(new
+        {
+            message = "YouTube video converted and processed successfully.",
+            tracks = trackUrls
+        });
+    })
+    .WithName("ConvertYouTubeToMp3AndSeparate");
 
 app.Run();

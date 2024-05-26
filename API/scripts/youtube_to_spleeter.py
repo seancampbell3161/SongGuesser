@@ -23,7 +23,8 @@ def separate_tracks(input_file, output_dir):
 
 if __name__ == "__main__":
     youtube_url = sys.argv[1]
-    output_dir = sys.argv[2]
+    mp3_output_dir = sys.argv[2]
+    wav_output_dir = sys.argv[3]
     
-    mp3_file = download_audio(youtube_url, output_dir)
-    separate_tracks(mp3_file, output_dir)
+    mp3_file = download_audio(youtube_url, mp3_output_dir)
+    separate_tracks(mp3_file, wav_output_dir)
