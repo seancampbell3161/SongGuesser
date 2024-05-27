@@ -8,18 +8,34 @@ const YouTubeConverter = () => {
     const [message, setMessage] = useState('');
     const [tracks, setTracks] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [songTitle, setSongTitle] = useState('');
+    const [artist, setArtist] = useState('');
 
     const handleUrlChange = (e) => {
         setUrl(e.target.value);
     };
+
+    const handleSongTitleChange = (e) => {
+        setSongTitle(e.target.value);
+    }
+
+    const handleArtistChange = (e) => {
+        setArtist(e.target.value);
+    }
 
     const handleConvert = async () => {
         setLoading(true);
         setMessage('');
         setTracks([]);
 
+        if (!url || !songTitle || !artist) {
+            setMessage('You must enter a URL, song title, and artist name');
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await axios.post('http://localhost:5244/api/Music/convert-and-separate', { url }, {
+            const response = await axios.post('http://localhost:5244/api/Music/convert-and-separate', { url, songTitle, artist }, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -35,8 +51,13 @@ const YouTubeConverter = () => {
 
     return (
         <div>
-            <input type="text" value={url} onChange={handleUrlChange} placeholder="Enter YouTube URL" />
-            <button onClick={handleConvert}>Convert</button>
+            <input type="text" value={url} onChange={handleUrlChange} placeholder="YouTube URL" />         
+            <form>
+                <input type="text" value={songTitle} onChange={handleSongTitleChange} placeholder="Song Title"></input>
+                <br />
+                <input type="text" value={artist} onChange={handleArtistChange} placeholder="Artist"></input>
+            </form>
+            <button onClick={handleConvert}>Add Song</button>
             
             {loading && (
                 <div className="spinner">

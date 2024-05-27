@@ -10,8 +10,8 @@ function App() {
         <h1>Enter YouTube URL</h1>
         <YouTubeConverter />
         <br />
-        <h1>Upload</h1>
-        <FileUpload />
+        {/* <h1>Upload</h1> */}
+        {/* <FileUpload /> */}
       </header>
     </div>
   );

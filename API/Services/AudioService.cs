@@ -32,7 +32,7 @@ public class AudioService : IAudioService
             result = await process.StandardOutput.ReadToEndAsync();
             error = await process.StandardError.ReadToEndAsync();
             process.WaitForExit();
-        
+
             if (process.ExitCode != 0)
             {
                 Console.WriteLine($"Error: {error}");
@@ -44,24 +44,34 @@ public class AudioService : IAudioService
         }
 
         Console.WriteLine($"Result: {result}");
+        var filePath = result
+            .Split("\n", StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault()?
+            .Trim();
+        var fileName = filePath?.Replace("Downloads/YouTube/", "") ?? "";
 
-        // Find the downloaded MP3 file
-        var directoryInfo = new DirectoryInfo(outputDir);
-        var file = directoryInfo.GetFiles("*.mp3").OrderByDescending(f => f.CreationTime).FirstOrDefault();
-        if (file == null)
+        if (!string.IsNullOrWhiteSpace(filePath) && !string.IsNullOrWhiteSpace(fileName))
         {
+            var directoryInfo = new DirectoryInfo(outputDir);
+            var file = directoryInfo.GetFiles(fileName).FirstOrDefault();
+            if (file == null)
+            {
+                return new ConvertResult()
+                {
+                    Error = $"No MP3 file found"
+                };
+            }
+
             return new ConvertResult()
             {
-                Error = $"No MP3 file found"
+                Message = "Successfully converted video to MP3",
+                FilePath = filePath
             };
         }
 
-        var fileUrl = $"/Downloads/YouTube/{file.Name}";
-
         return new ConvertResult()
         {
-            Message = "Successfully converted video to MP3",
-            FilePath = fileUrl
+            Error = $"No MP3 file found"
         };
     }
 
@@ -102,7 +112,7 @@ public class AudioService : IAudioService
             result = await process.StandardOutput.ReadToEndAsync();
             error = await process.StandardError.ReadToEndAsync();
             process.WaitForExit();
-            
+
             if (process.ExitCode != 0)
             {
                 Console.WriteLine($"Error: {error}");
@@ -112,18 +122,18 @@ public class AudioService : IAudioService
                 };
             }
         }
-        
+
         Console.WriteLine($"Result: {result}");
 
         var trackNames = new[] { "vocals", "drums", "bass", "other" };
-        var trackUrls = trackNames.Select(name => 
-            new Track
-                { 
-                    Name = name, 
+        var trackUrls = trackNames.Select(name =>
+                new Track
+                {
+                    Name = name,
                     Url = Path.Combine("SeparatedTracks",
-                                        Path.GetFileNameWithoutExtension(file.FileName.Replace(' ', '_')), $"{name}.wav") 
+                        Path.GetFileNameWithoutExtension(file.FileName.Replace(' ', '_')), $"{name}.wav")
                 })
-                .ToList();
+            .ToList();
 
         return new SeparateResult()
         {
@@ -146,9 +156,9 @@ public class AudioService : IAudioService
 
         var filePath = convertedMp3.FilePath;
         var fileName = convertedMp3.FilePath.Split("/").LastOrDefault();
-        
+
         var outputDir = Path.Combine("SeparatedTracks");
-        
+
         Directory.CreateDirectory(outputDir);
 
         var scriptPath = Path.Combine("scripts", "spleeter_script.py");
@@ -166,22 +176,6 @@ public class AudioService : IAudioService
             Environment =
                 { { "PATH", $"{Environment.GetEnvironmentVariable("PATH")}:{Path.GetDirectoryName(ffmpegPath)}" } }
         };
-        
-        // wait for mp3 file to download
-        // const int maxRetries = 20;
-        // const int delayMilliseconds = 3000;
-        // int retryCount = 0;
-        //
-        // while (!File.Exists(convertedMp3.FilePath) && retryCount < maxRetries)
-        // {
-        //     await Task.Delay(delayMilliseconds);
-        //     retryCount++;
-        // }
-
-        // if (!File.Exists(convertedMp3.FilePath))
-        // {
-        //     return new SeparateResult() { Error = "MP3 file not found after waiting." };
-        // }
 
         string result;
         string error;
@@ -191,7 +185,7 @@ public class AudioService : IAudioService
             result = await process.StandardOutput.ReadToEndAsync();
             error = await process.StandardError.ReadToEndAsync();
             process.WaitForExit();
-            
+
             if (process.ExitCode != 0)
             {
                 Console.WriteLine($"Error: {error}");
@@ -201,18 +195,18 @@ public class AudioService : IAudioService
                 };
             }
         }
-        
+
         Console.WriteLine($"Result: {result}");
 
         var trackNames = new[] { "vocals", "drums", "bass", "other" };
-        var trackUrls = trackNames.Select(name => 
-            new Track
-                { 
-                    Name = name, 
+        var trackUrls = trackNames.Select(name =>
+                new Track
+                {
+                    Name = name,
                     Url = Path.Combine("/SeparatedTracks",
-                                        Path.GetFileNameWithoutExtension(fileName), $"{name}.wav")
+                        Path.GetFileNameWithoutExtension(fileName), $"{name}.wav")
                 })
-                .ToList();
+            .ToList();
 
         return new SeparateResult()
         {

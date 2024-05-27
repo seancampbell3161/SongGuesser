@@ -20,11 +20,13 @@ def download_audio(youtube_url, output_dir):
         info_dict = ydl.extract_info(youtube_url, download=True)
         title = info_dict.get('title', None)
         if title:
-            # Rename the file to replace spaces with underscores
             original_filename = os.path.join(output_dir, f"{title}.mp3")
             sanitized_filename = os.path.join(output_dir, sanitize_filename(f"{title}.mp3"))
             if os.path.exists(original_filename):
                 os.rename(original_filename, sanitized_filename)
+                print(sanitized_filename) # capture filename
+                return sanitized_filename
+    return None
 
 if __name__ == "__main__":
     youtube_url = sys.argv[1]
