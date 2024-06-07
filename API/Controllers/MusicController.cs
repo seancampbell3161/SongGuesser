@@ -14,6 +14,13 @@ public class MusicController : ControllerBase
     {
         _audioService = audioService;
     }
+
+    [HttpGet("random")]
+    public async Task<IActionResult> GetRandomSongTracks()
+    {
+        var result = await _audioService.GetRandomSongTracksAsync();
+        return Ok(result);
+    }
     
     [HttpPost("convert")]
     public async Task<IActionResult> ConvertAsync([FromForm] string url)

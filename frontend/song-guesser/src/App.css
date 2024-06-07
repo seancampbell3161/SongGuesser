@@ -28,6 +28,17 @@
   color: #61dafb;
 }
 
+button {
+  margin: 5px;
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

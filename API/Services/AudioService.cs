@@ -230,4 +230,35 @@ public class AudioService : IAudioService
             Error = convertedResult.Error
         };
     }
+
+    public async Task<SeparateResult> GetRandomSongTracksAsync()
+    {
+        var separatedTracksPath = Path.Combine("SeparatedTracks");
+        var directoryInfo = new DirectoryInfo(separatedTracksPath);
+        var directories = directoryInfo.GetDirectories();
+
+        if (directories.Length == 0)
+        {
+            return new SeparateResult()
+            {
+                Error = "No songs available"
+            };
+        }
+
+        var random = new Random();
+        var randomDirectory = directories[random.Next(directories.Length)];
+
+        var trackNames = new[] { "vocals", "drums", "bass", "other" };
+        var tracks = trackNames.Select(name => new Track
+        {
+            Name = name,
+            Url = Path.Combine("SeparatedTracks", randomDirectory.Name, $"{name}.wav")
+        }).ToList();
+
+        return new SeparateResult
+        {
+            Message = "Success",
+            Tracks = tracks
+        };
+    }
 }
