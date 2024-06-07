@@ -82,3 +82,8 @@ API/pretrained_models
 API/Uploads
 API/SeparatedTracks
 API/Downloads
+
+.db
+.db-shm
+.db-wal
+API/appsettings.json
