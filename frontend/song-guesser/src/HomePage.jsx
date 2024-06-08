@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import api from './api';
 
 const HomePage = () => {
     const [tracks, setTracks] = useState([]);
@@ -9,7 +9,8 @@ const HomePage = () => {
     useEffect(() => {
         const fetchRandomSong = async () => {
             try {
-                const response = await axios.get('http://localhost:5244/api/Music/random');
+                console.log('hit fetch random song')
+                const response = await api.get('/Music/random');
                 setTracks(response.data.tracks);
                 setMessage(response.data.message);
                 // Initialize audio refs
@@ -33,7 +34,6 @@ const HomePage = () => {
             }
         });
 
-        // Play selected tracks
         trackNames.forEach(trackName => {
             const audioEl = audioRefs.current[trackName].current;
             if (audioEl) {
