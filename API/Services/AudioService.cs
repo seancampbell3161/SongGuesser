@@ -149,70 +149,81 @@ public class AudioService : IAudioService
             return new SeparateResult() { Error = "URL cannot be null" };
         }
 
-        if (convertedMp3.FilePath.StartsWith("/"))
+        try
         {
-            convertedMp3.FilePath = convertedMp3.FilePath.Substring(1);
-        }
-
-        var filePath = convertedMp3.FilePath;
-        var fileName = convertedMp3.FilePath.Split("/").LastOrDefault();
-
-        var outputDir = Path.Combine("SeparatedTracks");
-
-        Directory.CreateDirectory(outputDir);
-
-        var scriptPath = Path.Combine("scripts", "spleeter_script.py");
-        var pythonPath = "/opt/anaconda3/envs/py37/bin/python3";
-        var ffmpegPath = "/usr/local/bin/ffmpeg";
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = pythonPath,
-            Arguments = $"{scriptPath} {filePath} {outputDir}",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            Environment =
-                { { "PATH", $"{Environment.GetEnvironmentVariable("PATH")}:{Path.GetDirectoryName(ffmpegPath)}" } }
-        };
-
-        string result;
-        string error;
-        using (var process = new Process { StartInfo = startInfo })
-        {
-            process.Start();
-            result = await process.StandardOutput.ReadToEndAsync();
-            error = await process.StandardError.ReadToEndAsync();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
+            if (convertedMp3.FilePath.StartsWith("/"))
             {
-                Console.WriteLine($"Error: {error}");
-                return new SeparateResult()
-                {
-                    Error = $"Error processing file: {error}"
-                };
+                convertedMp3.FilePath = convertedMp3.FilePath.Substring(1);
             }
-        }
 
-        Console.WriteLine($"Result: {result}");
+            var filePath = convertedMp3.FilePath;
+            var fileName = convertedMp3.FilePath.Split("/").LastOrDefault();
 
-        var trackNames = new[] { "vocals", "drums", "bass", "other" };
-        var trackUrls = trackNames.Select(name =>
-                new TrackDto
+            var outputDir = Path.Combine("SeparatedTracks");
+
+            Directory.CreateDirectory(outputDir);
+
+            var scriptPath = Path.Combine("scripts", "spleeter_script.py");
+            var pythonPath = "/opt/anaconda3/envs/py37/bin/python3";
+            var ffmpegPath = "/usr/local/bin/ffmpeg";
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = pythonPath,
+                Arguments = $"{scriptPath} {filePath} {outputDir}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                Environment =
+                    { { "PATH", $"{Environment.GetEnvironmentVariable("PATH")}:{Path.GetDirectoryName(ffmpegPath)}" } }
+            };
+
+            string result;
+            string error;
+            using (var process = new Process { StartInfo = startInfo })
+            {
+                process.Start();
+                result = await process.StandardOutput.ReadToEndAsync();
+                error = await process.StandardError.ReadToEndAsync();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
                 {
-                    Name = name,
-                    Path = Path.Combine("/SeparatedTracks",
-                        Path.GetFileNameWithoutExtension(fileName), $"{name}.wav")
-                })
-            .ToList();
+                    Console.WriteLine($"Error: {error}");
+                    return new SeparateResult()
+                    {
+                        Error = $"Error processing file: {error}"
+                    };
+                }
+            }
 
-        return new SeparateResult()
+            Console.WriteLine($"Result: {result}");
+
+            var trackNames = new[] { "vocals", "drums", "bass", "other" };
+            var trackUrls = trackNames.Select(name =>
+                    new TrackDto
+                    {
+                        Name = name,
+                        Path = Path.Combine("/SeparatedTracks",
+                            Path.GetFileNameWithoutExtension(fileName), $"{name}.wav")
+                    })
+                .ToList();
+
+            return new SeparateResult()
+            {
+                Message = "File uploaded and processed successfully",
+                Tracks = trackUrls
+            };
+        }
+        catch (Exception ex)
         {
-            Message = "File uploaded and processed successfully",
-            Tracks = trackUrls
-        };
+            Console.WriteLine(ex.Message);
+            return new SeparateResult
+            {
+                Error = ex.Message
+            };
+        }
     }
 
     public async Task<SeparateResult> ConvertAndSeparateTracksAsync(string url)

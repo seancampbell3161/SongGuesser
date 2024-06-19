@@ -25,8 +25,34 @@ public class MusicController : ControllerBase
     [HttpGet("random")]
     public async Task<IActionResult> GetRandomSongTracks()
     {
-        var result = await _audioService.GetRandomSongTracksAsync();
-        return Ok(result);
+        try
+        {
+            var song = await _context.Songs
+                .Include(s => s.Artist)
+                .Include(s => s.Tracks)
+                .OrderBy(r => Guid.NewGuid())
+                .FirstOrDefaultAsync();
+
+            if (song != null)
+            {
+                var response = new
+                {
+                    songId = song.Id,
+                    title = song.Title,
+                    artist = song.Artist.Name,
+                    tracks = song.Tracks.Select(t => new { t.Name, t.Path })
+                };
+
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return StatusCode(500);
+        }
+
+        return NotFound();
     }
     
     [HttpPost("convert")]
@@ -75,42 +101,50 @@ public class MusicController : ControllerBase
 
         if (result.Error == null)
         {
-            var artist = await _context.Artists
-                .FirstOrDefaultAsync(a => a.Name == request.Artist.ToUpper().Trim());
-
-            if (artist == null)
+            try
             {
-                artist = new Artist
+                var artist = await _context.Artists
+                    .FirstOrDefaultAsync(a => a.Name == request.Artist.ToUpper().Trim());
+
+                if (artist == null)
                 {
-                    Name = request.Artist.ToUpper().Trim()
+                    artist = new Artist
+                    {
+                        Name = request.Artist.ToUpper().Trim()
+                    };
+
+                    await _context.Artists.AddAsync(artist);
+                    await _context.SaveChangesAsync();
+                }
+
+                var song = new Song
+                {
+                    Title = request.SongTitle.ToUpper().Trim(),
+                    ArtistId = artist.Id
                 };
-                
-                await _context.Artists.AddAsync(artist);
+
+                await _context.Songs.AddAsync(song);
+                await _context.SaveChangesAsync();
+
+                foreach (var trackResult in result.Tracks)
+                {
+                    var track = new Track
+                    {
+                        Name = trackResult.Name,
+                        Path = trackResult.Path,
+                        SongId = song.Id
+                    };
+
+                    await _context.Tracks.AddAsync(track);
+                }
+
                 await _context.SaveChangesAsync();
             }
-
-            var song = new Song
+            catch (Exception ex)
             {
-                Title = request.SongTitle.ToUpper().Trim(),
-                ArtistId = artist.Id
-            };
-            
-            await _context.Songs.AddAsync(song);
-            await _context.SaveChangesAsync();
-
-            foreach (var trackResult in result.Tracks)
-            {
-                var track = new Track
-                {
-                    Name = trackResult.Name,
-                    Path = trackResult.Path,
-                    SongId = song.Id
-                };
-
-                await _context.Tracks.AddAsync(track);
+                Console.WriteLine(ex.Message);
+                return StatusCode(500);
             }
-
-            await _context.SaveChangesAsync();
         }
         return Ok(result);
     }
