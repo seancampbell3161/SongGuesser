@@ -127,10 +127,10 @@ public class AudioService : IAudioService
 
         var trackNames = new[] { "vocals", "drums", "bass", "other" };
         var trackUrls = trackNames.Select(name =>
-                new Track
+                new TrackDto
                 {
                     Name = name,
-                    Url = Path.Combine("SeparatedTracks",
+                    Path = Path.Combine("SeparatedTracks",
                         Path.GetFileNameWithoutExtension(file.FileName.Replace(' ', '_')), $"{name}.wav")
                 })
             .ToList();
@@ -200,10 +200,10 @@ public class AudioService : IAudioService
 
         var trackNames = new[] { "vocals", "drums", "bass", "other" };
         var trackUrls = trackNames.Select(name =>
-                new Track
+                new TrackDto
                 {
                     Name = name,
-                    Url = Path.Combine("/SeparatedTracks",
+                    Path = Path.Combine("/SeparatedTracks",
                         Path.GetFileNameWithoutExtension(fileName), $"{name}.wav")
                 })
             .ToList();
@@ -231,6 +231,7 @@ public class AudioService : IAudioService
         };
     }
 
+    [Obsolete]
     public async Task<SeparateResult> GetRandomSongTracksAsync()
     {
         var separatedTracksPath = Path.Combine("SeparatedTracks");
@@ -249,10 +250,10 @@ public class AudioService : IAudioService
         var randomDirectory = directories[random.Next(directories.Length)];
 
         var trackNames = new[] { "vocals", "drums", "bass", "other" };
-        var tracks = trackNames.Select(name => new Track
+        var tracks = trackNames.Select(name => new TrackDto
         {
             Name = name,
-            Url = Path.Combine("SeparatedTracks", randomDirectory.Name, $"{name}.wav")
+            Path = Path.Combine("SeparatedTracks", randomDirectory.Name, $"{name}.wav")
         }).ToList();
 
         return new SeparateResult

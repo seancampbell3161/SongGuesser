@@ -68,7 +68,7 @@ const ConvertPage = () => {
                     {tracks.map((track, index) => (
                         <div key={index}>
                             <h4>{track.name}</h4>
-                            <ReactAudioPlayer src={`http://localhost:5244${track.url}`} controls />
+                            <ReactAudioPlayer src={`http://localhost:5244${track.path}`} controls />
                         </div>
                     ))}
                 </div>

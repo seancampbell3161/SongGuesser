@@ -57,7 +57,7 @@ const HomePage = () => {
                     {tracks.map((track, index) => (
                         <div key={index}>
                             <h4>{track.name}</h4>
-                            <audio ref={audioRefs.current[track.name]} src={`http://localhost:5244/${track.url}`} />
+                            <audio ref={audioRefs.current[track.name]} src={`http://localhost:5244/${track.path}`} />
                         </div>
                     ))}
                 </div>

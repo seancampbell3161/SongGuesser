@@ -1,7 +1,7 @@
 namespace API.DTOs;
 
-public class Track
+public class TrackDto
 {
     public string Name { get; set; }
-    public string Url { get; set; }
+    public string Path { get; set; }
 }

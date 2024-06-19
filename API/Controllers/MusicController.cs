@@ -1,7 +1,10 @@
+using API.Data;
+using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -11,10 +14,12 @@ namespace API.Controllers;
 public class MusicController : ControllerBase
 {
     private readonly IAudioService _audioService;
+    private readonly ApplicationDbContext _context;
 
-    public MusicController(IAudioService audioService)
+    public MusicController(IAudioService audioService, ApplicationDbContext context)
     {
         _audioService = audioService;
+        _context = context;
     }
 
     [HttpGet("random")]
@@ -67,6 +72,46 @@ public class MusicController : ControllerBase
         }
 
         var result = await _audioService.ConvertAndSeparateTracksAsync(request.Url);
+
+        if (result.Error == null)
+        {
+            var artist = await _context.Artists
+                .FirstOrDefaultAsync(a => a.Name == request.Artist.ToUpper().Trim());
+
+            if (artist == null)
+            {
+                artist = new Artist
+                {
+                    Name = request.Artist.ToUpper().Trim()
+                };
+                
+                await _context.Artists.AddAsync(artist);
+                await _context.SaveChangesAsync();
+            }
+
+            var song = new Song
+            {
+                Title = request.SongTitle.ToUpper().Trim(),
+                ArtistId = artist.Id
+            };
+            
+            await _context.Songs.AddAsync(song);
+            await _context.SaveChangesAsync();
+
+            foreach (var trackResult in result.Tracks)
+            {
+                var track = new Track
+                {
+                    Name = trackResult.Name,
+                    Path = trackResult.Path,
+                    SongId = song.Id
+                };
+
+                await _context.Tracks.AddAsync(track);
+            }
+
+            await _context.SaveChangesAsync();
+        }
         return Ok(result);
     }
 }
