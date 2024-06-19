@@ -1,3 +1,4 @@
+using API.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -6,8 +7,27 @@ namespace API.Data;
 
 public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
+    public DbSet<Artist> Artists { get; set; }
+    public DbSet<Song> Songs { get; set; }
+    public DbSet<Track> Tracks { get; set; }
+    
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Artist>()
+            .HasMany(a => a.Songs)
+            .WithOne(s => s.Artist)
+            .HasForeignKey(s => s.ArtistId);
+
+        builder.Entity<Song>()
+            .HasMany(s => s.Tracks)
+            .WithOne(t => t.Song)
+            .HasForeignKey(t => t.SongId);
     }
 }
