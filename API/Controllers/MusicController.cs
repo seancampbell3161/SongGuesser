@@ -61,7 +61,7 @@ public class MusicController : ControllerBase
     [HttpPost("convert-and-separate")]
     public async Task<IActionResult> ConvertAndSeparateAsync([FromBody] YouTubeRequest request)
     {
-        if (request == null || string.IsNullOrWhiteSpace(request.Url))
+        if (string.IsNullOrWhiteSpace(request.Url))
         {
             return BadRequest("URL cannot be null");
         }

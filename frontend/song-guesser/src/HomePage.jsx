@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
-import api from './api';
+import api from './api'; // Import the axios instance
+import ConvertPage from './ConvertPage';
 
 const HomePage = () => {
     const [tracks, setTracks] = useState([]);
     const [message, setMessage] = useState('');
-    const audioRefs = useRef({}); // Refs to control each audio element
+    const audioRefs = useRef({});
 
     useEffect(() => {
         const fetchRandomSong = async () => {
             try {
-                console.log('hit fetch random song')
                 const response = await api.get('/Music/random');
                 setTracks(response.data.tracks);
                 setMessage(response.data.message);
-                // Initialize audio refs
                 response.data.tracks.forEach(track => {
                     audioRefs.current[track.name] = React.createRef();
                 });
@@ -26,7 +25,6 @@ const HomePage = () => {
     }, []);
 
     const playTracks = (trackNames) => {
-        // Pause all tracks first
         Object.values(audioRefs.current).forEach(ref => {
             if (ref.current) {
                 ref.current.pause();
@@ -73,6 +71,10 @@ const HomePage = () => {
                     <button onClick={pauseTracks}>Pause</button>
                 </div>
             )}
+            <br />
+            <div>
+                <ConvertPage />
+            </div>
         </div>
     );
 };

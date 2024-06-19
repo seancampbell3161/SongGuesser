@@ -8,7 +8,16 @@ const ConvertPage = () => {
     const [message, setMessage] = useState('');
     const [tracks, setTracks] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [artist, setArtist] = useState('');
+    const [songTitle, setSongTitle] = useState('');
 
+    const handleSongTitleChange = (e) => {
+        setSongTitle(e.target.value);
+    }
+
+    const handleAristChange = (e) => {
+        setArtist(e.target.value);
+    }
     const handleUrlChange = (e) => {
         setUrl(e.target.value);
     };
@@ -18,8 +27,14 @@ const ConvertPage = () => {
         setMessage('');
         setTracks([]);
 
+        const request = {
+            songTitle: songTitle,
+            artist: artist,
+            url: url
+        }
+
         try {
-            const response = await axios.post('http://localhost:5244/api/Music/convert-and-separate', { url }, {
+            const response = await axios.post('http://localhost:5244/api/Music/convert-and-separate', request, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -35,6 +50,8 @@ const ConvertPage = () => {
 
     return (
         <div>
+            <input type="text" value={songTitle} onChange={handleSongTitleChange} placeholder="Song Title" />
+            <input type="text" value={artist} onChange={handleAristChange} placeholder="Artist Name" />
             <input type="text" value={url} onChange={handleUrlChange} placeholder="Enter YouTube URL" />
             <button onClick={handleConvert}>Convert</button>
             
