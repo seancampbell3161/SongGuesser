@@ -1,18 +1,34 @@
 import React, { useEffect, useState, useRef } from 'react';
-import api from './api'; // Import the axios instance
+import axios from 'axios';
 import ConvertPage from './ConvertPage';
+
+const stages = [
+    { name: 'Drums', tracks: ['drums'] },
+    { name: 'Drums + Bass', tracks: ['drums', 'bass'] },
+    { name: 'Drums + Bass + Other', tracks: ['drums', 'bass', 'other'] },
+    { name: 'Drums + Bass + Other + Vocals', tracks: ['drums', 'bass', 'other', 'vocals'] }
+];
 
 const HomePage = () => {
     const [tracks, setTracks] = useState([]);
     const [message, setMessage] = useState('');
+    const [currentStage, setCurrentStage] = useState(0);
+    const [songGuess, setSongGuess] = useState('');
+    const [artistGuess, setArtistGuess] = useState('');
+    const [feedback, setFeedback] = useState('');
+    const [correctSong, setCorrectSong] = useState('');
+    const [correctArtist, setCorrectArtist] = useState('');
+    const [isPlaying, setIsPlaying] = useState(false);
     const audioRefs = useRef({});
 
     useEffect(() => {
         const fetchRandomSong = async () => {
             try {
-                const response = await api.get('/Music/random');
+                const response = await axios.get('http://localhost:5244/api/Music/random');
                 setTracks(response.data.tracks);
-                setMessage(response.data.message);
+                // setMessage(`Playing a random song...`);
+                setCorrectSong(response.data.title);
+                setCorrectArtist(response.data.artist);
                 response.data.tracks.forEach(track => {
                     audioRefs.current[track.name] = React.createRef();
                 });
@@ -38,6 +54,8 @@ const HomePage = () => {
                 audioEl.play();
             }
         });
+
+        setIsPlaying(true);
     };
 
     const pauseTracks = () => {
@@ -46,35 +64,75 @@ const HomePage = () => {
                 ref.current.pause();
             }
         });
+
+        setIsPlaying(false);
+    };
+
+    const handleGuess = () => {
+        let feedbackMessage = '';
+        if (songGuess.toLowerCase() === correctSong.toLowerCase()) {
+            feedbackMessage += 'Correct song title! ';
+        } else {
+            feedbackMessage += 'Incorrect song title. ';
+        }
+
+        if (artistGuess.toLowerCase() === correctArtist.toLowerCase()) {
+            feedbackMessage += 'Correct artist name!';
+        } else {
+            feedbackMessage += 'Incorrect artist name.';
+        }
+
+        setFeedback(feedbackMessage);
+    };
+
+    const handleNextStage = () => {
+        pauseTracks();
+        if (currentStage < stages.length - 1) {
+            setCurrentStage(currentStage + 1);
+            setFeedback('');
+        }
     };
 
     return (
         <div>
-            <h1>Random Song</h1>
+            <h1>Guess the Song</h1>
             <p>{message}</p>
             {tracks.length > 0 && (
                 <div>
                     {tracks.map((track, index) => (
                         <div key={index}>
-                            <h4>{track.name}</h4>
-                            <audio ref={audioRefs.current[track.name]} src={`http://localhost:5244/${track.path}`} />
+                            {/* <h4>{track.name}</h4> */}
+                            <audio ref={audioRefs.current[track.name]} src={`http://localhost:5244${track.path}`} />
                         </div>
                     ))}
                 </div>
             )}
             {tracks.length > 0 && (
                 <div>
-                    <button onClick={() => playTracks(['drums'])}>Play Drums</button>
-                    <button onClick={() => playTracks(['drums', 'bass'])}>Play Drums and Bass</button>
-                    <button onClick={() => playTracks(['drums', 'bass', 'other'])}>Play Drums, Bass, and Other</button>
-                    <button onClick={() => playTracks(['drums', 'bass', 'other', 'vocals'])}>Play All Tracks</button>
-                    <button onClick={pauseTracks}>Pause</button>
+                    <h2>Currently Playing: {stages[currentStage].name}</h2>
+                    <button onClick={() => playTracks(stages[currentStage].tracks)} disabled={isPlaying}>Play</button>
+                    <button onClick={pauseTracks} disabled={!isPlaying}>Stop</button>
+                    <button onClick={handleNextStage} disabled={currentStage >= stages.length - 1}>Next</button>
                 </div>
             )}
-            <br />
             <div>
-                <ConvertPage />
+                <input
+                    type="text"
+                    placeholder="Song Title"
+                    value={songGuess}
+                    onChange={(e) => setSongGuess(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Artist"
+                    value={artistGuess}
+                    onChange={(e) => setArtistGuess(e.target.value)}
+                />
+                <button onClick={handleGuess}>Confirm</button>
             </div>
+            {feedback && <p>{feedback}</p>}
+            <br />
+            <ConvertPage />
         </div>
     );
 };

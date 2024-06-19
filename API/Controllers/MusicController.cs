@@ -27,24 +27,35 @@ public class MusicController : ControllerBase
     {
         try
         {
+            var songIds = await _context.Songs.Select(s => s.Id).ToListAsync();
+
+            if (songIds.Count == 0)
+            {
+                return NotFound(); 
+            }
+
+            var random = new Random();
+            var randomSongId = songIds[random.Next(songIds.Count)];
+
             var song = await _context.Songs
                 .Include(s => s.Artist)
                 .Include(s => s.Tracks)
-                .OrderBy(r => Guid.NewGuid())
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(s => s.Id == randomSongId);
 
-            if (song != null)
+            if (song == null)
             {
-                var response = new
-                {
-                    songId = song.Id,
-                    title = song.Title,
-                    artist = song.Artist.Name,
-                    tracks = song.Tracks.Select(t => new { t.Name, t.Path })
-                };
-
-                return Ok(response);
+                return NotFound();
             }
+
+            var response = new
+            {
+                id = song.Id,
+                title = song.Title,
+                artist = song.Artist.Name,
+                tracks = song.Tracks.Select(t => new { t.Name, t.Path })
+            };
+
+            return Ok(response);
         }
         catch (Exception ex)
         {
