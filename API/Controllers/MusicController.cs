@@ -16,16 +16,6 @@ public class MusicController(
     ApplicationDbContext context)
     : ControllerBase
 {
-    [HttpPost("convert-audio-format")]
-    public async Task<IActionResult> ConvertAudioFormat()
-    {
-        await FFMpegArguments.FromUrlInput(new Uri("https://demo.twilio.com/docs/classic.mp3"))
-            .OutputToFile("classic.wav")
-            .ProcessAsynchronously();
-
-        return Ok();
-    }
-
     [HttpGet("random")]
     public async Task<IActionResult> GetRandomSongTracks()
     {

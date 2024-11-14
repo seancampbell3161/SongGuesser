@@ -65,6 +65,46 @@ public class GameController(
         return Ok();
     }
 
+    [HttpGet("leaderboard")]
+    public async Task<IActionResult> GetLeaderboard()
+    {
+        try
+        {
+            var leaders = await context.UserScores
+                                                            .GroupBy(x => x.UserId)
+                                                            .Select(group => new
+                                                            {
+                                                                UserId = group.Key,
+                                                                TotalScore = group.Sum(x => x.Score)
+                                                            })
+                                                            .OrderByDescending(x => x.TotalScore)
+                                                            .Take(5)
+                                                            .ToListAsync();
+
+            var result = new List<UserTotalScoreDto>();
+            
+            foreach (var leader in leaders)
+            {
+                var username = await context.Users
+                                        .Where(x => x.Id == leader.UserId)
+                                        .Select(x => x.UserName)
+                                        .FirstOrDefaultAsync();
+                result.Add(new UserTotalScoreDto
+                {
+                    UserName = username,
+                    TotalScore = leader.TotalScore
+                });
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+        return Ok();
+    }
+
     private int CalculateScore(UserResultDto userResult)
     {
         if (userResult.CorrectlyAnswered != true)
