@@ -4,6 +4,7 @@ using API.DTOs;
 using API.Interfaces;
 using FFMpegCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,23 +13,13 @@ namespace API.Controllers;
 // [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class MusicController : ControllerBase
+public class MusicController(
+    IAudioService audioService,
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager)
+    : ControllerBase
 {
-    private readonly IAudioService _audioService;
-    private readonly ApplicationDbContext _context;
-
-    public MusicController(IAudioService audioService, ApplicationDbContext context)
-    {
-        _audioService = audioService;
-        _context = context;
-    }
-
-    [HttpPost("submit-answer")]
-    public async Task<IActionResult> SubmitAnswer(UserResultDto userResult)
-    {
-        
-        return Ok();
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpPost("convert-audio-format")]
     public async Task<IActionResult> ConvertAudioFormat()
@@ -45,7 +36,7 @@ public class MusicController : ControllerBase
     {
         try
         {
-            var songIds = await _context.Songs.Select(s => s.Id).ToListAsync();
+            var songIds = await context.Songs.Select(s => s.Id).ToListAsync();
 
             if (songIds.Count == 0)
             {
@@ -55,7 +46,7 @@ public class MusicController : ControllerBase
             var random = new Random();
             var randomSongId = songIds[random.Next(songIds.Count)];
 
-            var song = await _context.Songs
+            var song = await context.Songs
                 .Include(s => s.Artist)
                 .Include(s => s.Tracks)
                 .FirstOrDefaultAsync(s => s.Id == randomSongId);
@@ -92,7 +83,7 @@ public class MusicController : ControllerBase
             return BadRequest("No YouTube URL provided.");
         }
 
-        var result = await _audioService.ConvertToMp3Async(url);
+        var result = await audioService.ConvertToMp3Async(url);
         return Ok(result);
     }
     
@@ -104,7 +95,7 @@ public class MusicController : ControllerBase
             return BadRequest("No file uploaded.");
         }
 
-        var result = await _audioService.SeparateTracksAsync(file);
+        var result = await audioService.SeparateTracksAsync(file);
 
         return Ok(result);
     }
@@ -114,7 +105,7 @@ public class MusicController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(convertResult.FilePath)) return BadRequest("Url required");
         
-        var result = _audioService.SeparateTracksAsync(convertResult);
+        var result = audioService.SeparateTracksAsync(convertResult);
         return Ok(result);
     }
 
@@ -126,13 +117,13 @@ public class MusicController : ControllerBase
             return BadRequest("URL cannot be null");
         }
 
-        var result = await _audioService.ConvertAndSeparateTracksAsync(request.Url);
+        var result = await audioService.ConvertAndSeparateTracksAsync(request.Url);
 
         if (result.Error == null)
         {
             try
             {
-                var artist = await _context.Artists
+                var artist = await context.Artists
                     .FirstOrDefaultAsync(a => a.Name == request.Artist.ToUpper().Trim());
 
                 if (artist == null)
@@ -142,8 +133,8 @@ public class MusicController : ControllerBase
                         Name = request.Artist.ToUpper().Trim()
                     };
 
-                    await _context.Artists.AddAsync(artist);
-                    await _context.SaveChangesAsync();
+                    await context.Artists.AddAsync(artist);
+                    await context.SaveChangesAsync();
                 }
 
                 var song = new Song
@@ -152,8 +143,8 @@ public class MusicController : ControllerBase
                     ArtistId = artist.Id
                 };
 
-                await _context.Songs.AddAsync(song);
-                await _context.SaveChangesAsync();
+                await context.Songs.AddAsync(song);
+                await context.SaveChangesAsync();
 
                 foreach (var trackResult in result.Tracks)
                 {
@@ -164,10 +155,10 @@ public class MusicController : ControllerBase
                         SongId = song.Id
                     };
 
-                    await _context.Tracks.AddAsync(track);
+                    await context.Tracks.AddAsync(track);
                 }
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

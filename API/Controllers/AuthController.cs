@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using API.Data.Entities;
 using API.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +12,8 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController(
-    UserManager<IdentityUser> userManager,
-    SignInManager<IdentityUser> signInManager,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
     IConfiguration configuration)
     : ControllerBase
 {
@@ -21,7 +22,7 @@ public class AuthController(
     {
         if (ModelState.IsValid)
         {
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
             var result = await userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -60,7 +61,7 @@ public class AuthController(
         return Unauthorized("Invalid login attempt");
     }
 
-    private string GenerateJwtToken(IdentityUser user)
+    private string GenerateJwtToken(ApplicationUser user)
     {
         var claims = new[]
         {
