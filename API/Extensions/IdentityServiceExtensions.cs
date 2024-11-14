@@ -1,5 +1,6 @@
 using System.Text;
 using API.Data;
+using API.Data.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,7 @@ public static class IdentityServiceExtensions
             opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
         });
         
-        services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;

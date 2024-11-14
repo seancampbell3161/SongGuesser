@@ -3,8 +3,6 @@ using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
 using FFMpegCore;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +13,9 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class MusicController(
     IAudioService audioService,
-    ApplicationDbContext context,
-    UserManager<ApplicationUser> userManager)
+    ApplicationDbContext context)
     : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-
     [HttpPost("convert-audio-format")]
     public async Task<IActionResult> ConvertAudioFormat()
     {
@@ -71,8 +66,6 @@ public class MusicController(
             Console.WriteLine(ex.Message);
             return StatusCode(500);
         }
-
-        return NotFound();
     }
     
     [HttpPost("convert")]
@@ -90,7 +83,7 @@ public class MusicController(
     [HttpPost("separate")]
     public async Task<IActionResult> SeparateTracksAsync([FromForm] IFormFile file)
     {
-        if (file == null || file.Length == 0)
+        if (file.Length == 0)
         {
             return BadRequest("No file uploaded.");
         }
@@ -105,7 +98,7 @@ public class MusicController(
     {
         if (string.IsNullOrWhiteSpace(convertResult.FilePath)) return BadRequest("Url required");
         
-        var result = audioService.SeparateTracksAsync(convertResult);
+        var result = await audioService.SeparateTracksAsync(convertResult);
         return Ok(result);
     }
 
@@ -133,8 +126,7 @@ public class MusicController(
                         Name = request.Artist.ToUpper().Trim()
                     };
 
-                    await context.Artists.AddAsync(artist);
-                    await context.SaveChangesAsync();
+                    context.Artists.Add(artist);
                 }
 
                 var song = new Song
@@ -143,19 +135,16 @@ public class MusicController(
                     ArtistId = artist.Id
                 };
 
-                await context.Songs.AddAsync(song);
-                await context.SaveChangesAsync();
+                context.Songs.Add(song);
 
-                foreach (var trackResult in result.Tracks)
+                foreach (var track in result.Tracks.Select(trackResult => new Track
+                         {
+                             Name = trackResult.Name,
+                             Path = trackResult.Path,
+                             SongId = song.Id
+                         }))
                 {
-                    var track = new Track
-                    {
-                        Name = trackResult.Name,
-                        Path = trackResult.Path,
-                        SongId = song.Id
-                    };
-
-                    await context.Tracks.AddAsync(track);
+                    context.Tracks.Add(track);
                 }
 
                 await context.SaveChangesAsync();
