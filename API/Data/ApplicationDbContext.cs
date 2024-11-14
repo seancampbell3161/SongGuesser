@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
-public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public DbSet<Artist> Artists { get; set; }
     public DbSet<Song> Songs { get; set; }
     public DbSet<Track> Tracks { get; set; }
+    public DbSet<UserScore> UserScores { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -29,5 +30,11 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             .HasMany(s => s.Tracks)
             .WithOne(t => t.Song)
             .HasForeignKey(t => t.SongId);
+
+        builder.Entity<UserScore>()
+            .HasOne(us => us.User)
+            .WithMany(u => u.UserScores)
+            .HasForeignKey(us => us.UserId)
+            .IsRequired();
     }
 }

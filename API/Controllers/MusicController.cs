@@ -23,6 +23,13 @@ public class MusicController : ControllerBase
         _context = context;
     }
 
+    [HttpPost("submit-answer")]
+    public async Task<IActionResult> SubmitAnswer(UserResultDto userResult)
+    {
+        
+        return Ok();
+    }
+
     [HttpPost("convert-audio-format")]
     public async Task<IActionResult> ConvertAudioFormat()
     {
