@@ -14,11 +14,11 @@ const App = () => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setIsAuthenticated(true);
         }
-        setIsLoading(false); // Mark loading as complete
+        setIsLoading(false);
     }, []);
 
     if (isLoading) {
-        return <div>Loading...</div>; // Show a loading message or spinner
+        return <div>Loading...</div>;
     }
 
     return (
