@@ -2,6 +2,7 @@ using API.Data;
 using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
+using FFMpegCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,16 @@ public class MusicController : ControllerBase
     {
         _audioService = audioService;
         _context = context;
+    }
+
+    [HttpPost("convert-audio-format")]
+    public async Task<IActionResult> ConvertAudioFormat()
+    {
+        await FFMpegArguments.FromUrlInput(new Uri("https://demo.twilio.com/docs/classic.mp3"))
+            .OutputToFile("classic.wav")
+            .ProcessAsynchronously();
+
+        return Ok();
     }
 
     [HttpGet("random")]

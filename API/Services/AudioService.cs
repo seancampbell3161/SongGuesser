@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using API.DTOs;
+using API.DTOs.Constants;
 using API.Interfaces;
+using FFMpegCore;
 
 namespace API.Services;
 
@@ -186,7 +188,7 @@ public class AudioService : IAudioService
                 process.Start();
                 result = await process.StandardOutput.ReadToEndAsync();
                 error = await process.StandardError.ReadToEndAsync();
-                process.WaitForExit();
+                await process.WaitForExitAsync();
 
                 if (process.ExitCode != 0)
                 {
@@ -230,16 +232,60 @@ public class AudioService : IAudioService
     {
         var convertedResult = await ConvertToMp3Async(url);
 
-        if (convertedResult.Error == null)
+        if (convertedResult.Error != null)
         {
-            var separatedTracksResult = await SeparateTracksAsync(convertedResult);
-            return separatedTracksResult;
+            return new SeparateResult()
+            {
+                Error = convertedResult.Error
+            };
+        }
+            
+        var separatedTracksResult = await SeparateTracksAsync(convertedResult);
+
+        if (separatedTracksResult.Error != null) { return new SeparateResult { Error = separatedTracksResult.Error }; }
+        
+        SeparateResult finalResult = await ConvertAudioFormat(separatedTracksResult.Tracks, AudioFormats.Mp3);
+        
+        return finalResult;
+    }
+
+    private async Task<SeparateResult> ConvertAudioFormat(List<TrackDto> tracks, string format)
+    {
+        var result = new SeparateResult();
+
+        foreach (var track in tracks)
+        {
+            var path = $"{track.Path}".Replace(Path.GetExtension(track.Path), $".{format}");
+            
+            try
+            {
+                var oldPath = track.Path.Remove(0, 1);
+                var isConverted = await FFMpegArguments.FromFileInput(oldPath)
+                    .OutputToFile($"{path}".Remove(0, 1))
+                    .ProcessAsynchronously();
+
+                if (!isConverted)
+                {
+                    result.Error = $"Error processing file: {track.Path}";
+                    return result;
+                }
+                
+                File.Delete(oldPath);
+            }
+            catch (Exception ex)
+            {
+                result.Error = ex.Message;
+                return result;
+            }
+            
+            result.Tracks.Add(new TrackDto
+            {
+                Name = track.Name,
+                Path = path
+            });
         }
 
-        return new SeparateResult()
-        {
-            Error = convertedResult.Error
-        };
+        return result;
     }
 
     [Obsolete]
