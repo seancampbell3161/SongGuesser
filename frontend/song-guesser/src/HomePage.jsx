@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import ConvertPage from './ConvertPage';
+import './App.css';
 
 const stages = [
     { name: 'Drums', tracks: ['drums'] },
@@ -94,7 +95,7 @@ const HomePage = () => {
     };
 
     return (
-        <div>
+        <div className="home">
             <h1>Guess the Song</h1>
             <p>{message}</p>
             {tracks.length > 0 && (
@@ -108,14 +109,17 @@ const HomePage = () => {
                 </div>
             )}
             {tracks.length > 0 && (
-                <div>
-                    <h2>Currently Playing: {stages[currentStage].name}</h2>
-                    <button onClick={() => playTracks(stages[currentStage].tracks)} disabled={isPlaying}>Play</button>
-                    <button onClick={pauseTracks} disabled={!isPlaying}>Stop</button>
-                    <button onClick={handleNextStage} disabled={currentStage >= stages.length - 1}>Next</button>
+                <div className="audio-options">
+                    <h2>Currently Playing: </h2>
+                    <h2>{stages[currentStage].name}</h2>
+                    <div className="audio-btns">
+                        <button onClick={() => playTracks(stages[currentStage].tracks)} disabled={isPlaying}>Play</button>
+                        <button onClick={pauseTracks} disabled={!isPlaying}>Stop</button>
+                        <button onClick={handleNextStage} disabled={currentStage >= stages.length - 1}>Next</button>
+                    </div>                
                 </div>
             )}
-            <div>
+            <div className="guessing-fields">
                 <input
                     type="text"
                     placeholder="Song Title"
@@ -131,7 +135,7 @@ const HomePage = () => {
                 <button onClick={handleGuess}>Confirm</button>
             </div>
             {feedback && <p>{feedback}</p>}
-            <br />
+
             <ConvertPage />
         </div>
     );
