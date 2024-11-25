@@ -1,3 +1,4 @@
+using API.Data.Repositories;
 using API.Extensions;
 using API.Interfaces;
 using API.Services;
@@ -16,6 +17,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IAudioService, AudioService>();
+builder.Services.AddScoped<IUserScoreRepository, UserScoreRepository>();
 
 var app = builder.Build();
 

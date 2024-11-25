@@ -7,10 +7,10 @@ namespace API.Data;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public DbSet<Artist> Artists { get; set; }
-    public DbSet<Song> Songs { get; set; }
-    public DbSet<Track> Tracks { get; set; }
-    public DbSet<UserScore> UserScores { get; set; }
+    public DbSet<Artist> Artists { get; init; }
+    public DbSet<Song> Songs { get; init; }
+    public DbSet<Track> Tracks { get; init; }
+    public DbSet<UserScore> UserScores { get; init; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
