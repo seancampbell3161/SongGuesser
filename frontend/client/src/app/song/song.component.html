@@ -1,0 +1,18 @@
+<div class="container d-flex flex-column align-items-center justify-content-center mt-4">
+    <p>{{songTitle()}}</p>
+    <!-- @if (trackPaths() && trackPaths()?.length! > 0) {
+        @for (trackPath of trackPaths(); track trackPath; let i = $index) {
+            <div>
+                <p>{{stages[i].name}}</p>
+                <audio controls src="{{trackPaths()![i]}}"></audio>
+            </div>           
+        }
+    } -->
+    <div>
+        @if (!isPlaying()) {
+            <i class="fa-solid fa-play fa-2xl" (click)="setIsPlaying(true)"></i>
+        } @else () {
+            <i class="fa-solid fa-pause fa-2xl" (click)="setIsPlaying(false)"></i>
+        }       
+    </div>
+</div>
