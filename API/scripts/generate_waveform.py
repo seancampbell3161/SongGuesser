@@ -4,7 +4,7 @@ import sys
 import json
 
 
-def generate_waveform_data(path, output_directory):
+def generate_waveform_data(path):
     file = wave.open(path, 'rb')
     sample_freq = file.getframerate()
     n_samples = file.getnframes()
@@ -24,5 +24,4 @@ def generate_waveform_data(path, output_directory):
 
 if __name__ == '__main__':
     file_path = sys.argv[1]
-    output_dir = sys.argv[2]
-    generate_waveform_data(file_path, output_dir)
+    generate_waveform_data(file_path)

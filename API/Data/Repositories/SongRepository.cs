@@ -2,6 +2,7 @@ using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using WaveformData = API.Data.Entities.WaveformData;
 
 namespace API.Data.Repositories;
 
@@ -25,7 +26,12 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
                         Tracks = result.Tracks.Select(t => new Track
                         {
                             Name = t.Name,
-                            Path = t.Path
+                            Path = t.Path,
+                            WaveformData = new WaveformData
+                            {
+                                Id = 0
+                            },
+                            WaveformId = 0
                         }).ToList()
                     }]
                 };
@@ -57,17 +63,18 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
                          {
                              Name = trackResult.Name,
                              Path = trackResult.Path,
-                             SongId = song.Id
+                             SongId = song.Id,
+                             WaveformData = new WaveformData
+                             {
+                                 Id = 0
+                             },
+                             WaveformId = 0
                          }))
                 {
                     context.Tracks.Add(track);
                 }
             }
-
             
-
-            
-
             await context.SaveChangesAsync();
         }
         catch (Exception ex)

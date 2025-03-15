@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { SongService } from './data-access/song.service';
 import { Howl } from 'howler';
 
@@ -12,17 +12,19 @@ export class SongComponent {
   private songSvc = inject(SongService);
 
   private isPlayingState = signal<boolean>(false);
-  private stepsState = signal<number>(1);
+  private stepsState = signal<number>(0);
 
   isPlaying = computed(() => this.isPlayingState());
   currentStep = computed(() => this.stepsState());
   songTitle = this.songSvc.songTitle;
+
   trackPaths = computed(() => this.songSvc.tracks()?.map(t => 'http://localhost:5244' + t.path));
+
   howls = computed(() => this.trackPaths()?.map(path => new Howl({ src: [path] })));
-  vocals = computed(() => new Howl({ src: this.trackPaths() ? this.trackPaths()![0] : ''}));
-  drums = computed(() => new Howl({ src: this.trackPaths() ? this.trackPaths()![1] : ''}));
-  bass = computed(() => new Howl({ src: this.trackPaths() ? this.trackPaths()![2] : ''}));
-  other = computed(() => new Howl({ src: this.trackPaths() ? this.trackPaths()![3] : ''}));
+  vocals = computed(() => this.howls()?.at(3));
+  drums = computed(() => this.howls()?.at(0));
+  bass = computed(() => this.howls()?.at(1));
+  other = computed(() => this.howls()?.at(2));
 
   sound!: Howl
 
@@ -31,7 +33,7 @@ export class SongComponent {
   // bass
   // other
 
-  stages = [
+  stages: { name: string; tracks: string[] }[] = [
     { name: 'Drums', tracks: ['drums'] },
     { name: 'Drums + Bass', tracks: ['drums', 'bass'] },
     { name: 'Drums + Bass + Other', tracks: ['drums', 'bass', 'other'] },
@@ -42,19 +44,38 @@ export class SongComponent {
     this.songSvc.loadRandomSong$.next(null);
 
     effect(() => {
-      if (this.isPlaying() && this.trackPaths()) {
-        console.log(this.trackPaths());
-        this.drums().play();
-        this.bass().play();
-        this.other().play();
-
-      } else if (!this.isPlaying() && this.trackPaths()) {
-        this.drums().stop();
-        this.bass().stop();
-        this.other().stop();
-        this.vocals().stop();
+      if (!this.isPlaying() && this.howls()) {
+        this.howls()!.forEach(h => h.stop());
       }
-    })
+    });
+  }
+
+  playTracks(index: number) {
+    if (this.isPlaying() === true) {
+      this.setIsPlaying(false);
+      this.howls()?.forEach(h => h.stop());
+    }
+    
+    this.setIsPlaying(true);
+    this.stepsState.set(index);
+
+    switch (index) {
+      case 0:
+        this.drums()?.play();
+        break;
+      case 1:
+        this.drums()?.play();
+        this.bass()?.play();
+        break;
+      case 2:
+        this.drums()?.play();
+        this.bass()?.play();
+        this.other()?.play();
+        break;
+      default:
+        this.howls()?.forEach(h => h.play());
+        break;
+    }
   }
 
   setIsPlaying(val: boolean) {

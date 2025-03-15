@@ -34,5 +34,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(u => u.UserScores)
             .HasForeignKey(us => us.UserId)
             .IsRequired();
+
+        builder.Entity<Track>()
+            .HasOne(t => t.WaveformData)
+            .WithOne(wf => wf.Track)
+            .HasForeignKey<Track>(t => t.WaveformId);
     }
 }

@@ -17,6 +17,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IAudioService, AudioService>();
+builder.Services.AddScoped<IWaveformService, WaveformService>();
 builder.Services.AddScoped<IUserScoreRepository, UserScoreRepository>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
 

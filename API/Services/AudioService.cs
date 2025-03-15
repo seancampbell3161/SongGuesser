@@ -7,7 +7,7 @@ using FFMpegCore;
 
 namespace API.Services;
 
-public class AudioService : IAudioService
+public class AudioService(IWaveformService waveformService) : IAudioService
 {
     public async Task<ConvertResult> ConvertToMp3Async(string url)
     {
@@ -161,7 +161,7 @@ public class AudioService : IAudioService
             }
 
             var filePath = convertedMp3.FilePath;
-            var fileName = convertedMp3.FilePath.Split("/").LastOrDefault();
+            var fileName = convertedMp3.FilePath.Split("/").LastOrDefault() ?? string.Empty;
 
             var outputDir = Path.Combine("SeparatedTracks");
 
@@ -246,58 +246,12 @@ public class AudioService : IAudioService
         var separatedTracksResult = await SeparateTracksAsync(convertedResult);
 
         if (separatedTracksResult.Error != null) { return new SeparateResult { Error = separatedTracksResult.Error }; }
-
-        CreateWaveforms(separatedTracksResult);
+        
+        // await waveformService.CreateWaveforms(separatedTracksResult);
         
         SeparateResult finalResult = await ConvertAudioFormat(separatedTracksResult.Tracks, AudioFormats.Mp3);
         
         return finalResult;
-    }
-
-    private async Task CreateWaveforms(SeparateResult separatedTracksResult)
-    {
-        var scriptPath = Path.Combine("scripts", "generate_waveform.py");
-        var pythonPath = "/opt/anaconda3/bin/python3";
-
-        try
-        {
-            foreach (var track in separatedTracksResult.Tracks)
-            {
-                var trackPath = "/Users/seancampbell/Documents/source/repos/SongGuesser/API" + track.Path;
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = pythonPath,
-                    Arguments = $"{scriptPath} \"{trackPath}\" \"{Path.GetPathRoot(track.Path)}/waveforms\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-
-                using var process = Process.Start(startInfo);
-                string output = await process?.StandardOutput.ReadToEndAsync()!;
-                string error = await process.StandardError.ReadToEndAsync();
-
-                await process.WaitForExitAsync();
-
-                if (!string.IsNullOrEmpty(error))
-                {
-                    Console.WriteLine(error);
-                }
-
-                if (string.IsNullOrWhiteSpace(output)) continue;
-
-                var path = Path.Combine(Path.GetPathRoot(track.Path) ?? "SeparatedTracks", "waveforms",
-                    Path.GetFileNameWithoutExtension(track.Path) + ".json");
-                
-                await File.WriteAllTextAsync(path, output);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        
     }
 
     private async Task<SeparateResult> ConvertAudioFormat(List<TrackDto> tracks, string format)
