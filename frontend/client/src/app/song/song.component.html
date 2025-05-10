@@ -1,0 +1,24 @@
+<div class="container d-flex flex-column align-items-center justify-content-center mt-4">
+    <p>{{songTitle()}}</p>
+    @if (trackPaths() && trackPaths()?.length! > 0) {
+        @for (trackPath of trackPaths(); track trackPath; let i = $index) {
+            <div class="d-flex flex-column align-items-center mt-4">
+                <p [ngClass]="currentStep() === i ? 'green' : 'black'">{{stages[i].name}}</p>
+            </div>           
+        }
+    }
+
+    <div class="mt-4 d-flex gap-3">
+        <div>
+            @if (!isPlaying()) {
+                <i class="fa-solid fa-play fa-2xl" (click)="playTracks(currentStep())"></i>
+            } @else () {
+                <i class="fa-solid fa-pause fa-2xl" (click)="setIsPlaying(false)"></i>
+            }
+        </div>
+        <div>
+            <button (click)="busySvc.busy()">Skip</button>
+        </div>
+    </div>
+</div>
+

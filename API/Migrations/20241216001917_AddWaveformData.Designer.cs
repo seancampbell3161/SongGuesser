@@ -3,16 +3,19 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace API.Migrations
+namespace API.API.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241216001917_AddWaveformData")]
+    partial class AddWaveformData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
@@ -135,15 +138,12 @@ namespace API.Migrations
                     b.Property<int>("SongId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("WaveformId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("WaveformData")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SongId");
-
-                    b.HasIndex("WaveformId")
-                        .IsUnique();
 
                     b.ToTable("Tracks");
                 });
@@ -169,20 +169,6 @@ namespace API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserScores");
-                });
-
-            modelBuilder.Entity("API.Data.Entities.WaveformData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Data")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WaveformData");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -332,15 +318,7 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Data.Entities.WaveformData", "WaveformData")
-                        .WithOne("Track")
-                        .HasForeignKey("API.Data.Entities.Track", "WaveformId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Song");
-
-                    b.Navigation("WaveformData");
                 });
 
             modelBuilder.Entity("API.Data.Entities.UserScore", b =>
@@ -418,11 +396,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.Entities.Song", b =>
                 {
                     b.Navigation("Tracks");
-                });
-
-            modelBuilder.Entity("API.Data.Entities.WaveformData", b =>
-                {
-                    b.Navigation("Track");
                 });
 #pragma warning restore 612, 618
         }

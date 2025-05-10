@@ -13,10 +13,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
-        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policyBuilder => policyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
 builder.Services.AddScoped<IAudioService, AudioService>();
+builder.Services.AddScoped<IWaveformService, WaveformService>();
 builder.Services.AddScoped<IUserScoreRepository, UserScoreRepository>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
 
@@ -30,6 +31,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAllOrigins");
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -57,8 +60,6 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(builder.Environment.ContentRootPath, "Downloads")),
     RequestPath = "/Downloads"
 });
-
-app.UseCors("AllowAllOrigins");
 
 // debug log middleware
 // app.Use(async (context, next) =>

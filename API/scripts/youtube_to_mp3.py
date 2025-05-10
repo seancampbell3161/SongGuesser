@@ -1,9 +1,11 @@
 import yt_dlp
 import sys
 import os
+import uuid
 
 def sanitize_filename(filename):
-    return filename.replace(' ', '_')
+    return str(uuid.uuid4())
+    #return filename.replace(' ', '_')
 
 def download_audio(youtube_url, output_dir):
     ydl_opts = {

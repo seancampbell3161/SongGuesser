@@ -1,6 +1,7 @@
 using API.Data;
 using API.Data.Entities;
 using API.DTOs;
+using API.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class GameController(
+    IUserScoreRepository userScoreRepository,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext context)
     : ControllerBase
@@ -57,6 +59,8 @@ public class GameController(
                 NumOfGuesses = userResult.NumOfGuesses,
                 User = user
             });
+
+            await context.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -68,41 +72,8 @@ public class GameController(
     [HttpGet("leaderboard")]
     public async Task<IActionResult> GetLeaderboard()
     {
-        try
-        {
-            var leaders = await context.UserScores
-                                                            .GroupBy(x => x.UserId)
-                                                            .Select(group => new
-                                                            {
-                                                                UserId = group.Key,
-                                                                TotalScore = group.Sum(x => x.Score)
-                                                            })
-                                                            .OrderByDescending(x => x.TotalScore)
-                                                            .Take(5)
-                                                            .ToListAsync();
-
-            var result = new List<UserTotalScoreDto>();
-            
-            foreach (var leader in leaders)
-            {
-                var username = await context.Users
-                                        .Where(x => x.Id == leader.UserId)
-                                        .Select(x => x.UserName)
-                                        .FirstOrDefaultAsync();
-                result.Add(new UserTotalScoreDto
-                {
-                    UserName = username,
-                    TotalScore = leader.TotalScore
-                });
-            }
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
-        return Ok();
+        var topScores = await userScoreRepository.GetHighScoresAsync();
+        return Ok(topScores);
     }
 
     private int CalculateScore(UserResultDto userResult)

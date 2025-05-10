@@ -13,9 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<UserScore> UserScores { get; init; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -36,5 +34,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(u => u.UserScores)
             .HasForeignKey(us => us.UserId)
             .IsRequired();
+
+        builder.Entity<Track>()
+            .HasOne(t => t.WaveformData)
+            .WithOne(wf => wf.Track)
+            .HasForeignKey<Track>(t => t.WaveformId);
     }
 }

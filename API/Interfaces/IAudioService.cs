@@ -8,5 +8,4 @@ public interface IAudioService
     Task<SeparateResult> SeparateTracksAsync(IFormFile file);
     Task<SeparateResult> SeparateTracksAsync(ConvertResult result);
     Task<SeparateResult> ConvertAndSeparateTracksAsync(string url);
-    Task<SeparateResult> GetRandomSongTracksAsync();
 }

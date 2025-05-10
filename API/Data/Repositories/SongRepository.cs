@@ -2,6 +2,7 @@ using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using WaveformData = API.Data.Entities.WaveformData;
 
 namespace API.Data.Repositories;
 
@@ -11,37 +12,69 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
     {
         try
         {
-            var artist = await context.Artists
-                .FirstOrDefaultAsync(a => a.Name == request.Artist.ToUpper().Trim());
+            var artist = await context.Artists.Include(artist => artist.Songs)
+                .FirstOrDefaultAsync(a => a.Name == request.Artist!.ToUpper().Trim());
 
             if (artist == null)
             {
                 artist = new Artist
                 {
-                    Name = request.Artist.ToUpper().Trim()
+                    Name = request.Artist!.ToUpper().Trim(),
+                    Songs = [ new Song
+                    {
+                        Title = request.SongTitle!.ToUpper().Trim(),
+                        Tracks = result.Tracks.Select(t => new Track
+                        {
+                            Name = t.Name,
+                            Path = t.Path,
+                            WaveformData = new WaveformData
+                            {
+                                Id = 0
+                            },
+                            WaveformId = 0
+                        }).ToList()
+                    }]
                 };
 
                 context.Artists.Add(artist);
+                
+                // foreach (var track in result.Tracks.Select(trackResult => new Track
+                //          {
+                //              Name = trackResult.Name,
+                //              Path = trackResult.Path,
+                //              SongId = artist.Songs
+                //                  .Where(x => x.Title == request.SongTitle!.ToUpper().Trim()).FirstOrDefault()!.Id
+                //          }))
+                // {
+                //     context.Tracks.Add(track);
+                // }
             }
-
-            var song = new Song
+            else
             {
-                Title = request.SongTitle.ToUpper().Trim(),
-                ArtistId = artist.Id
-            };
+                var song = new Song
+                {
+                    Title = request.SongTitle!.ToUpper().Trim(),
+                    ArtistId = artist.Id
+                };
 
-            context.Songs.Add(song);
-
-            foreach (var track in result.Tracks.Select(trackResult => new Track
-                     {
-                         Name = trackResult.Name,
-                         Path = trackResult.Path,
-                         SongId = song.Id
-                     }))
-            {
-                context.Tracks.Add(track);
+                context.Songs.Add(song);
+                
+                foreach (var track in result.Tracks.Select(trackResult => new Track
+                         {
+                             Name = trackResult.Name,
+                             Path = trackResult.Path,
+                             SongId = song.Id,
+                             WaveformData = new WaveformData
+                             {
+                                 Id = 0
+                             },
+                             WaveformId = 0
+                         }))
+                {
+                    context.Tracks.Add(track);
+                }
             }
-
+            
             await context.SaveChangesAsync();
         }
         catch (Exception ex)

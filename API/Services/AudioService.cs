@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using API.DTOs;
 using API.DTOs.Constants;
 using API.Interfaces;
@@ -6,7 +7,7 @@ using FFMpegCore;
 
 namespace API.Services;
 
-public class AudioService : IAudioService
+public class AudioService(IWaveformService waveformService) : IAudioService
 {
     public async Task<ConvertResult> ConvertToMp3Async(string url)
     {
@@ -28,12 +29,13 @@ public class AudioService : IAudioService
 
         string result;
         string error;
-        using (var process = new Process { StartInfo = startInfo })
+        using (var process = new Process())
         {
+            process.StartInfo = startInfo;
             process.Start();
             result = await process.StandardOutput.ReadToEndAsync();
             error = await process.StandardError.ReadToEndAsync();
-            process.WaitForExit();
+            await process.WaitForExitAsync();
 
             if (process.ExitCode != 0)
             {
@@ -52,29 +54,28 @@ public class AudioService : IAudioService
             .Trim();
         var fileName = filePath?.Replace("Downloads/YouTube/", "") ?? "";
 
-        if (!string.IsNullOrWhiteSpace(filePath) && !string.IsNullOrWhiteSpace(fileName))
-        {
-            var directoryInfo = new DirectoryInfo(outputDir);
-            var file = directoryInfo.GetFiles(fileName).FirstOrDefault();
-            if (file == null)
-            {
-                return new ConvertResult()
-                {
-                    Error = $"No MP3 file found"
-                };
-            }
-
+        if (string.IsNullOrWhiteSpace(filePath) || string.IsNullOrWhiteSpace(fileName))
             return new ConvertResult()
             {
-                Message = "Successfully converted video to MP3",
-                FilePath = filePath
+                Error = $"No MP3 file found"
+            };
+        
+        var directoryInfo = new DirectoryInfo(outputDir);
+        var file = directoryInfo.GetFiles(fileName).FirstOrDefault();
+        if (file == null)
+        {
+            return new ConvertResult()
+            {
+                Error = $"No MP3 file found"
             };
         }
 
         return new ConvertResult()
         {
-            Error = $"No MP3 file found"
+            Message = "Successfully converted video to MP3",
+            FilePath = filePath
         };
+
     }
 
     public async Task<SeparateResult> SeparateTracksAsync(IFormFile file)
@@ -82,7 +83,7 @@ public class AudioService : IAudioService
         var uploadPath = Path.Combine("Uploads", file.FileName.Replace(' ', '_'));
         var outputDir = Path.Combine("SeparatedTracks");
 
-        Directory.CreateDirectory(Path.GetDirectoryName(uploadPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(uploadPath) ?? Guid.NewGuid().ToString());
         Directory.CreateDirectory(outputDir);
 
         await using (var stream = new FileStream(uploadPath, FileMode.Create))
@@ -108,8 +109,9 @@ public class AudioService : IAudioService
 
         string result;
         string error;
-        using (var process = new Process { StartInfo = startInfo })
+        using (var process = new Process())
         {
+            process.StartInfo = startInfo;
             process.Start();
             result = await process.StandardOutput.ReadToEndAsync();
             error = await process.StandardError.ReadToEndAsync();
@@ -153,13 +155,13 @@ public class AudioService : IAudioService
 
         try
         {
-            if (convertedMp3.FilePath.StartsWith("/"))
+            if (convertedMp3.FilePath.StartsWith('/'))
             {
-                convertedMp3.FilePath = convertedMp3.FilePath.Substring(1);
+                convertedMp3.FilePath = convertedMp3.FilePath[1..];
             }
 
             var filePath = convertedMp3.FilePath;
-            var fileName = convertedMp3.FilePath.Split("/").LastOrDefault();
+            var fileName = convertedMp3.FilePath.Split("/").LastOrDefault() ?? string.Empty;
 
             var outputDir = Path.Combine("SeparatedTracks");
 
@@ -183,8 +185,9 @@ public class AudioService : IAudioService
 
             string result;
             string error;
-            using (var process = new Process { StartInfo = startInfo })
+            using (var process = new Process())
             {
+                process.StartInfo = startInfo;
                 process.Start();
                 result = await process.StandardOutput.ReadToEndAsync();
                 error = await process.StandardError.ReadToEndAsync();
@@ -244,6 +247,8 @@ public class AudioService : IAudioService
 
         if (separatedTracksResult.Error != null) { return new SeparateResult { Error = separatedTracksResult.Error }; }
         
+        // await waveformService.CreateWaveforms(separatedTracksResult);
+        
         SeparateResult finalResult = await ConvertAudioFormat(separatedTracksResult.Tracks, AudioFormats.Mp3);
         
         return finalResult;
@@ -286,37 +291,5 @@ public class AudioService : IAudioService
         }
 
         return result;
-    }
-
-    [Obsolete]
-    public async Task<SeparateResult> GetRandomSongTracksAsync()
-    {
-        var separatedTracksPath = Path.Combine("SeparatedTracks");
-        var directoryInfo = new DirectoryInfo(separatedTracksPath);
-        var directories = directoryInfo.GetDirectories();
-
-        if (directories.Length == 0)
-        {
-            return new SeparateResult()
-            {
-                Error = "No songs available"
-            };
-        }
-
-        var random = new Random();
-        var randomDirectory = directories[random.Next(directories.Length)];
-
-        var trackNames = new[] { "vocals", "drums", "bass", "other" };
-        var tracks = trackNames.Select(name => new TrackDto
-        {
-            Name = name,
-            Path = Path.Combine("SeparatedTracks", randomDirectory.Name, $"{name}.wav")
-        }).ToList();
-
-        return new SeparateResult
-        {
-            Message = "Success",
-            Tracks = tracks
-        };
     }
 }

@@ -19,6 +19,15 @@ public class MusicController(
         {
             var response = await songRepository.GetRandomSongAsync();
 
+            List<TrackDto> ordered = [];
+            
+            ordered.Add(response.Tracks.First(x => x.Name.Contains("drum")));
+            ordered.Add(response.Tracks.First(x => x.Name.Contains("bass")));
+            ordered.Add(response.Tracks.First(x => x.Name.Contains("other")));
+            ordered.Add(response.Tracks.First(x => x.Name.Contains("vocal")));
+
+            response.Tracks = ordered;
+            
             return Ok(response);
         }
         catch (Exception)

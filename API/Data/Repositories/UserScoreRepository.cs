@@ -75,7 +75,9 @@ public class UserScoreRepository(ApplicationDbContext context) : IUserScoreRepos
                     UserName = x.Key ?? "",
                     TotalScore = x.Sum(y => y.Score)
                 })
-                .OrderByDescending(x => x.TotalScore).ToListAsync();
+                .OrderByDescending(x => x.TotalScore)
+                .Take(5)
+                .ToListAsync();
 
             return result;
         }
