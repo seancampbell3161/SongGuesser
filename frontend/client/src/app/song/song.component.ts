@@ -55,7 +55,7 @@ export class SongComponent {
       this.setIsPlaying(false);
       this.howls()?.forEach(h => h.stop());
     }
-    
+
     this.setIsPlaying(true);
     this.stepsState.set(index);
 
@@ -82,7 +82,15 @@ export class SongComponent {
     this.isPlayingState.set(val);
   }
 
-  nextStep() {
+  skipGuess() {
+    if (this.isPlaying()) {
+      this.setIsPlaying(false);
+      this.howls()?.forEach(h => h.stop());
+    }
+    this.nextStep();
+  }
+
+  private nextStep() {
     if (this.currentStep() < 4) {
       this.stepsState.update((state) => state + 1);
     }

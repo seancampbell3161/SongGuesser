@@ -1,1 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
+
+.upload-container {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body {
+    height: 100vh;
+    width: 100vw;
+}
