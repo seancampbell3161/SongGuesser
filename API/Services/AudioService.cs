@@ -292,36 +292,4 @@ public class AudioService(IWaveformService waveformService) : IAudioService
 
         return result;
     }
-
-    [Obsolete]
-    public async Task<SeparateResult> GetRandomSongTracksAsync()
-    {
-        var separatedTracksPath = Path.Combine("SeparatedTracks");
-        var directoryInfo = new DirectoryInfo(separatedTracksPath);
-        var directories = directoryInfo.GetDirectories();
-
-        if (directories.Length == 0)
-        {
-            return new SeparateResult()
-            {
-                Error = "No songs available"
-            };
-        }
-
-        var random = new Random();
-        var randomDirectory = directories[random.Next(directories.Length)];
-
-        var trackNames = new[] { "vocals", "drums", "bass", "other" };
-        var tracks = trackNames.Select(name => new TrackDto
-        {
-            Name = name,
-            Path = Path.Combine("SeparatedTracks", randomDirectory.Name, $"{name}.wav")
-        }).ToList();
-
-        return new SeparateResult
-        {
-            Message = "Success",
-            Tracks = tracks
-        };
-    }
 }

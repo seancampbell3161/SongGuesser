@@ -18,6 +18,7 @@ export class SongService {
   tracks = computed(() => this.songState()?.tracks);
 
   loadRandomSong$ = new Subject<null>();
+  skipGuess$ = new Subject<void>();
 
   constructor() {
     this.loadRandomSong$.pipe(

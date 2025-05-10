@@ -59,6 +59,8 @@ public class GameController(
                 NumOfGuesses = userResult.NumOfGuesses,
                 User = user
             });
+
+            await context.SaveChangesAsync();
         }
         catch (Exception ex)
         {

@@ -1,15 +1,20 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { SongService } from './data-access/song.service';
 import { Howl } from 'howler';
+import { NgClass } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
+import { BusyService } from '../services/busy.service';
 
 @Component({
   selector: 'app-song',
-  imports: [],
+  imports: [ NgClass ],
   templateUrl: './song.component.html',
   styleUrl: './song.component.css'
 })
 export class SongComponent {
   private songSvc = inject(SongService);
+  busySvc = inject(BusyService);
 
   private isPlayingState = signal<boolean>(false);
   private stepsState = signal<number>(0);
@@ -27,6 +32,8 @@ export class SongComponent {
   other = computed(() => this.howls()?.at(2));
 
   sound!: Howl
+
+  skip = toSignal(this.songSvc.skipGuess$.pipe(tap(() => this.skipGuess())))
 
   // vocals
   // drums

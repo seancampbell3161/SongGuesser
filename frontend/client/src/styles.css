@@ -9,6 +9,14 @@
     gap: 0.5rem;
 }
 
+.green {
+    color: green;
+}
+
+.black {
+    color: black;
+}
+
 body {
     height: 100vh;
     width: 100vw;
