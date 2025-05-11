@@ -1,7 +1,3 @@
 namespace API.DTOs;
 
-public class UserResultDto
-{
-    public bool CorrectlyAnswered { get; set; }
-    public int NumOfGuesses { get; set; }
-}
+public record UserResultDto(string UserId, int Score, int NumOfGuesses);

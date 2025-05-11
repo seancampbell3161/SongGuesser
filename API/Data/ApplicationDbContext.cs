@@ -11,6 +11,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Song> Songs { get; init; }
     public DbSet<Track> Tracks { get; init; }
     public DbSet<UserScore> UserScores { get; init; }
+    public DbSet<SongOfTheDay> SongsOfTheDay { get; init; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }

@@ -4,13 +4,13 @@ namespace API.Data.Entities;
 
 public class Track
 {
-    public int Id { get; set; }
+    public int Id { get; init; }
     [StringLength(150)]
-    public string Name { get; set; } = "";
+    public string Name { get; init; } = "";
     [StringLength(200)]
-    public string Path { get; set; } = "";
-    public int SongId { get; set; }
-    public int WaveformId { get; set; }
-    public Song? Song { get; set; }
-    public WaveformData? WaveformData { get; set; }
+    public string Path { get; init; } = "";
+    public int SongId { get; init; }
+    public int WaveformId { get; init; }
+    public Song? Song { get; init; }
+    public WaveformData? WaveformData { get; init; }
 }

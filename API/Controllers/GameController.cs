@@ -12,9 +12,10 @@ namespace API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class GameController(
-    IUserScoreRepository userScoreRepository,
+    IGameRepository gameRepository,
     UserManager<ApplicationUser> userManager,
-    ApplicationDbContext context)
+    ApplicationDbContext context,
+    IGameService gameService)
     : ControllerBase
 {
     [HttpGet("score")]
@@ -41,7 +42,7 @@ public class GameController(
     }
     
     [HttpPost("score")]
-    public async Task<IActionResult> SubmitAnswer(UserResultDto userResult)
+    public async Task<IActionResult> SubmitGuess(UserGuessDto guess)
     {
         var user = await userManager.GetUserAsync(HttpContext.User);
         if (user == null)
@@ -49,47 +50,15 @@ public class GameController(
             return Unauthorized();
         }
 
-        try
-        {
-            context.UserScores.Add(new UserScore
-            {
-                Id = 0,
-                UserId = user.Id,
-                Score = CalculateScore(userResult),
-                NumOfGuesses = userResult.NumOfGuesses,
-                User = user
-            });
-
-            await context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
-        return Ok();
+        var result = await gameService.ProcessUserGuessAsync(guess with { UserId = user.Id });
+        
+        return Ok(result);
     }
 
     [HttpGet("leaderboard")]
     public async Task<IActionResult> GetLeaderboard()
     {
-        var topScores = await userScoreRepository.GetHighScoresAsync();
+        var topScores = await gameRepository.GetHighScoresAsync();
         return Ok(topScores);
-    }
-
-    private int CalculateScore(UserResultDto userResult)
-    {
-        if (userResult.CorrectlyAnswered != true)
-        {
-            return 0;
-        }
-
-        return userResult.NumOfGuesses switch
-        {
-            1 => 100,
-            2 => 75,
-            3 => 50,
-            4 => 25,
-            _ => 0
-        };
     }
 }

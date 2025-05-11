@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
@@ -6,18 +5,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data.Repositories;
 
-public class UserScoreRepository(ApplicationDbContext context) : IUserScoreRepository
+public class GameRepository(ApplicationDbContext context) : IGameRepository
 {
-    public async Task AddUserScoreAsync(UserResultDto userResult, string userId)
+    public async Task AddUserScoreAsync(UserResultDto result)
     {
         try
         {
             context.UserScores.Add(new UserScore
             {
-                Id = 0,
-                UserId = userId,
-                Score = userResult.CorrectlyAnswered ? 100 - 25 * (userResult.NumOfGuesses - 1) : 0,
-                NumOfGuesses = userResult.NumOfGuesses
+                UserId = result.UserId,
+                Score = result.Score,
+                NumOfGuesses = result.NumOfGuesses
             });
 
             await context.SaveChangesAsync();
@@ -86,5 +84,13 @@ public class UserScoreRepository(ApplicationDbContext context) : IUserScoreRepos
             Console.WriteLine(ex.Message);
             return [];
         }
+    }
+
+    public async Task<SongOfTheDay?> GetSongOfTheDayAsync()
+    {
+        var entity = await context.SongsOfTheDay
+            .FirstOrDefaultAsync(x => x.CreatedUtc.Day == DateTime.UtcNow.Day);
+
+        return entity;
     }
 }
