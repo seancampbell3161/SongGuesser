@@ -1,4 +1,12 @@
-<div class="d-flex flex-column gap-5 align-items-center">
+<div class="row">
     <app-song></app-song>
+</div>
+<div class="row">
     <app-game></app-game>
 </div>
+<div class="toggle-darkmode-btn">
+    <!-- <p-button label="Toggle Dark Mode" (onClick)="toggleDarkMode()"/> -->
+     <i class="fa-regular fa-xl" [ngClass]="isDarkMode() ? 'fa-sun' : 'fa-moon'" (click)="toggleDarkMode()" style="cursor: pointer;"></i>
+</div>
+
+<!-- <div class="d-flex flex-column gap-5 align-items-center"></div> -->

@@ -5,10 +5,11 @@ import { NgClass } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
 import { BusyService } from '../services/busy.service';
+import { PanelModule } from 'primeng/panel';
 
 @Component({
   selector: 'app-song',
-  imports: [ NgClass ],
+  imports: [ NgClass, PanelModule ],
   templateUrl: './song.component.html',
   styleUrl: './song.component.css'
 })
@@ -46,6 +47,13 @@ export class SongComponent {
     { name: 'Drums + Bass + Other', tracks: ['drums', 'bass', 'other'] },
     { name: 'Drums + Bass + Other + Vocals', tracks: ['drums', 'bass', 'other', 'vocals'] }
   ];
+
+  icons = [
+    'fa-solid fa-drum',
+    'fa-solid fa-guitar',
+    'fa-solid fa-music',
+    'fa-solid fa-user'
+  ]
 
   constructor() {
     this.songSvc.loadRandomSong$.next(null);

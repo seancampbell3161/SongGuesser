@@ -1,12 +1,21 @@
 import { Component, inject } from '@angular/core';
 import { SongService } from '../song/data-access/song.service';
+import { ButtonModule } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-game',
-  imports: [],
+  imports: [ButtonModule, InputText, FormsModule],
   templateUrl: './game.component.html',
   styleUrl: './game.component.css'
 })
 export class GameComponent {
   songSvc = inject(SongService);
+
+  guess: string = '';
+
+  onSubmit(): void {
+
+  }
 }

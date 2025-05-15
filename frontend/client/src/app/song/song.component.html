@@ -1,24 +1,30 @@
-<div class="container d-flex flex-column align-items-center justify-content-center mt-4">
-    <p>{{songTitle()}}</p>
-    @if (trackPaths() && trackPaths()?.length! > 0) {
-        @for (trackPath of trackPaths(); track trackPath; let i = $index) {
-            <div class="d-flex flex-column align-items-center mt-4">
-                <p [ngClass]="currentStep() === i ? 'green' : 'black'">{{stages[i].name}}</p>
-            </div>           
-        }
-    }
-
-    <div class="mt-4 d-flex gap-3">
-        <div>
-            @if (!isPlaying()) {
-                <i class="fa-solid fa-play fa-2xl" (click)="playTracks(currentStep())"></i>
-            } @else () {
-                <i class="fa-solid fa-pause fa-2xl" (click)="setIsPlaying(false)"></i>
+<div class="song">
+    <div class="container d-flex flex-column align-items-center justify-content-center mt-4 gap-3">
+        <!-- <p>{{songTitle()}}</p> -->
+         <h1>Songle.xyz</h1>
+        @if (trackPaths() && trackPaths()?.length! > 0) {
+            @for (trackPath of trackPaths(); track trackPath; let i = $index) {
+                <div class="track" [ngClass]="currentStep() === i ? 'active' : 'not-active'">
+                    <p>{{stages[i].name}}</p>
+                    <i class="{{icons[i]}}"></i>
+                </div>
             }
-        </div>
-        <div>
+        }
+
+        <div class="mt-4 d-flex gap-3">
+                @if (!isPlaying()) {
+                    <div class="play-btn" (click)="playTracks(currentStep())">
+                        <i class="fa-solid fa-play fa-2xl"></i>
+                    </div>
+                } @else () {
+                    <div class="pause-btn" (click)="setIsPlaying(false)">
+                        <i class="fa-solid fa-pause fa-2xl"></i>
+                    </div>                   
+                }
+        <!-- <div>
             <button (click)="busySvc.busy()">Skip</button>
+            <p-button (onClick)="busySvc.busy()" label="Skip"></p-button>
+        </div> -->
         </div>
     </div>
 </div>
-
