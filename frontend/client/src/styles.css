@@ -38,6 +38,10 @@
     }
 }
 
+.gray {
+    color: var(--p-gray-300);
+}
+
 .black {
     color: black;
 }

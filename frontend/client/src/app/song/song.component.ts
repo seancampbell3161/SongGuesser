@@ -1,10 +1,9 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { SongService } from './data-access/song.service';
 import { Howl } from 'howler';
 import { NgClass } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
-import { BusyService } from '../services/busy.service';
 import { PanelModule } from 'primeng/panel';
 
 @Component({
@@ -15,7 +14,8 @@ import { PanelModule } from 'primeng/panel';
 })
 export class SongComponent {
   private songSvc = inject(SongService);
-  busySvc = inject(BusyService);
+
+  isDarkMode = input<boolean>();
 
   private isPlayingState = signal<boolean>(false);
   private stepsState = signal<number>(0);
@@ -26,20 +26,14 @@ export class SongComponent {
 
   trackPaths = computed(() => this.songSvc.tracks()?.map(t => 'http://localhost:5244' + t.path));
 
-  howls = computed(() => this.trackPaths()?.map(path => new Howl({ src: [path] })));
-  vocals = computed(() => this.howls()?.at(3));
-  drums = computed(() => this.howls()?.at(0));
-  bass = computed(() => this.howls()?.at(1));
-  other = computed(() => this.howls()?.at(2));
+  private howls = computed(() => this.trackPaths()?.map(path => new Howl({ src: [path] })));
+  private drums = computed(() => this.howls()?.at(0));
+  private bass = computed(() => this.howls()?.at(1));
+  private other = computed(() => this.howls()?.at(2));
 
   sound!: Howl
 
-  skip = toSignal(this.songSvc.skipGuess$.pipe(tap(() => this.skipGuess())))
-
-  // vocals
-  // drums
-  // bass
-  // other
+  skip = toSignal(this.songSvc.skipGuess$.pipe(tap(() => this.skipGuess())));
 
   stages: { name: string; tracks: string[] }[] = [
     { name: 'Drums', tracks: ['drums'] },
@@ -53,7 +47,7 @@ export class SongComponent {
     'fa-solid fa-guitar',
     'fa-solid fa-music',
     'fa-solid fa-user'
-  ]
+  ];
 
   constructor() {
     this.songSvc.loadRandomSong$.next(null);

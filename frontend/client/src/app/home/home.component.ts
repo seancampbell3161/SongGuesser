@@ -1,7 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { SongComponent } from '../song/song.component';
 import { GameComponent } from '../game/game.component';
-import { NgxSpinnerComponent } from 'ngx-spinner';
 import { ButtonModule } from 'primeng/button';
 import { NgClass } from '@angular/common';
 

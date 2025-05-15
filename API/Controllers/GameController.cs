@@ -41,7 +41,7 @@ public class GameController(
         }
     }
     
-    [HttpPost("score")]
+    [HttpPost]
     public async Task<IActionResult> SubmitGuess(UserGuessDto guess)
     {
         var user = await userManager.GetUserAsync(HttpContext.User);

@@ -1,7 +1,7 @@
 <div class="song">
     <div class="container d-flex flex-column align-items-center justify-content-center mt-4 gap-3">
         <!-- <p>{{songTitle()}}</p> -->
-         <h1>Songle.xyz</h1>
+         <h1 [ngClass]="isDarkMode() ? 'gray' : ''">Songle.xyz</h1>
         @if (trackPaths() && trackPaths()?.length! > 0) {
             @for (trackPath of trackPaths(); track trackPath; let i = $index) {
                 <div class="track" [ngClass]="currentStep() === i ? 'active' : 'not-active'">
@@ -21,10 +21,6 @@
                         <i class="fa-solid fa-pause fa-2xl"></i>
                     </div>                   
                 }
-        <!-- <div>
-            <button (click)="busySvc.busy()">Skip</button>
-            <p-button (onClick)="busySvc.busy()" label="Skip"></p-button>
-        </div> -->
         </div>
     </div>
 </div>
