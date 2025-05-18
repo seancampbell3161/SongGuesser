@@ -2,6 +2,7 @@ using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace API.Data.Repositories;
 
@@ -92,5 +93,41 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
             .FirstOrDefaultAsync(x => x.CreatedUtc.Day == DateTime.UtcNow.Day);
 
         return entity;
+    }
+
+    public async Task AddNewSongOfTheDayAsync()
+    {
+        try
+        {
+            var numOfSongs = context.Songs.Count();
+
+            Random rand = new();
+            var randomId = rand.Next(1, numOfSongs);
+
+            var song = await context.Songs
+                .Include(s => s.Artist)
+                .Select(s => new
+                {
+                    Id = s.Id,
+                    Song = s.Title,
+                    Artist = s.Artist != null ? s.Artist.Name : string.Empty
+                })
+                .FirstOrDefaultAsync(s => s.Id == randomId);
+
+            if (song == null) return;
+
+            context.SongsOfTheDay.Add(new SongOfTheDay
+            {
+                Artist = song.Artist,
+                Song = song.Song,
+                CreatedUtc = DateTime.UtcNow
+            });
+
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
     }
 }

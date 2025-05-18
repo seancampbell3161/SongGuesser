@@ -12,15 +12,11 @@ public static class IdentityServiceExtensions
 {
     public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
     {
-        var connectionString = config.GetConnectionString("DefaultConnection") ?? "Data Source=MyApp.db";
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString));
-        services.AddDatabaseDeveloperPageExceptionFilter();
-        
         services.AddDbContext<ApplicationDbContext>(opt =>
         {
             opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
         });
+        services.AddDatabaseDeveloperPageExceptionFilter();
         
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
