@@ -66,9 +66,9 @@
 }
 
 .toggle-darkmode-btn {
-    position:absolute;
+    /* position:absolute;
     top: 1.5rem;
-    right: 4rem;
+    right: 4rem; */
 
     i {
         color: var(--p-indigo-600);
@@ -96,6 +96,31 @@
     i {
         color: var(--p-indigo-600);
     }
+}
+
+.nav {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    padding: 0 3rem;
+}
+
+.nav-items {
+    padding: 10% 0;
+    
+    ul {
+        list-style-type: none;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+}
+
+.account-dialog-btns {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
 }
 
 body {

@@ -1,0 +1,95 @@
+<div class="nav-items">
+    <ul>
+        @if (!authSvc.isLoggedIn()) {
+            <li>
+                <div class="d-flex gap-3">
+                    <p-button (onClick)="showLogin.set(true)" label="Login" [raised]="true"></p-button>
+                    <p-button (onClick)="showRegister.set(true)" label="Register" [raised]="true" severity="secondary"></p-button>
+                </div>           
+            </li>
+        }
+        @if (authSvc.isLoggedIn()) {
+            <li>
+                <div class="toggle-darkmode-btn">
+                    <i class="fa-regular fa-user fa-xl" style="cursor: pointer;"></i>
+                </div>
+            </li>
+        }
+        <li>
+            <div class="toggle-darkmode-btn">
+                <i class="fa-regular fa-xl" [ngClass]="isDarkMode() ? 'fa-sun' : 'fa-moon'" (click)="toggleDarkMode()" style="cursor: pointer;"></i>
+            </div>
+        </li>
+    </ul>
+</div>
+
+@if (showLogin()) {
+    <p-dialog header="Login" [modal]="true" [visible]="true" [style]="{ width: '25rem' }">
+        <div class="row mb-2">
+            <div class="col-3 my-auto">
+                <label for="email" class="font-semibold w-24">Email</label>
+            </div>
+            <div class="col-9">
+                <input pInputText id="email" class="flex-auto" autocomplete="off" [(ngModel)]="email" />
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-3 my-auto">
+                <label for="password">Password</label>
+            </div>
+            <div class="col-9">
+                <input
+                    pInputText
+                    id="password"
+                    type="password"
+                    [(ngModel)]="password"
+                />
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <p-button label="Cancel" severity="secondary" (click)="showLogin.set(false)" />
+            <p-button label="Login" (click)="login()" />
+        </div>
+    </p-dialog>
+}
+
+@if (showRegister()) {
+    <p-dialog header="Create an account" [modal]="true" [visible]="true" [style]="{ width: '25rem' }">
+        <div class="row mb-2">
+            <div class="col-3 my-auto">
+                <label for="email" class="font-semibold w-24">Email</label>
+            </div>
+            <div class="col-9">
+                <input pInputText id="email" class="flex-auto" autocomplete="off" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-3 my-auto">
+                <label for="password">Password</label>
+            </div>
+            <div class="col-9">
+                <input
+                    pInputText
+                    id="password"
+                    type="password"
+                />
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-3 my-auto">
+                <label for="password-verify">Re-Enter</label>
+            </div>
+            <div class="col-9">
+                <input
+                    pInputText
+                    id="password-verify"
+                    type="password"
+                />
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <p-button label="Cancel" severity="secondary" (click)="showRegister.set(false)" />
+            <p-button label="Register" (click)="showRegister.set(false)" />
+        </div>
+    </p-dialog>
+}

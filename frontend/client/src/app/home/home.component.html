@@ -1,9 +1,9 @@
+<div class="nav">
+    <app-nav (darkModeOutput)="toggleDarkmode($event)"></app-nav>
+</div>
 <div class="row">
     <app-song [isDarkMode]="isDarkMode()"></app-song>
 </div>
 <div class="row mt-2">
     <app-game></app-game>
-</div>
-<div class="toggle-darkmode-btn">
-     <i class="fa-regular fa-xl" [ngClass]="isDarkMode() ? 'fa-sun' : 'fa-moon'" (click)="toggleDarkMode()" style="cursor: pointer;"></i>
 </div>
