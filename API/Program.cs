@@ -2,22 +2,76 @@ using API.Data.Repositories;
 using API.Extensions;
 using API.Interfaces;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+    
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter the JWT."
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            []
+        }
+    });
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
-        policyBuilder => policyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policyBuilder => policyBuilder
+            .WithOrigins("http://localhost:4200")
+            .AllowCredentials()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 });
 
 builder.Services.AddScoped<IAudioService, AudioService>();
 builder.Services.AddScoped<IWaveformService, WaveformService>();
+builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
 
@@ -62,12 +116,13 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 // debug log middleware
-// app.Use(async (context, next) =>
-// {
-//     Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
-//     await next();
-//     Console.WriteLine($"Response: {context.Response.StatusCode}");
-// });
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
+    Console.WriteLine($"Auth Header: {context.Request.Headers["Authorization"]}");
+    await next();
+    Console.WriteLine($"Response: {context.Response.StatusCode}");
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

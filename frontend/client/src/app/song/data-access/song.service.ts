@@ -11,6 +11,7 @@ export class SongService {
   private http = inject(HttpClient);
 
   private songState = signal<Song | null>(null);
+  currentStepState = signal<number>(0);
 
   song = computed(() => this.songState());
   songTitle = computed(() => this.songState()?.title);

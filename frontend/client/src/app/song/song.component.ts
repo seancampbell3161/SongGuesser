@@ -18,10 +18,9 @@ export class SongComponent {
   isDarkMode = input<boolean>();
 
   private isPlayingState = signal<boolean>(false);
-  private stepsState = signal<number>(0);
 
   isPlaying = computed(() => this.isPlayingState());
-  currentStep = computed(() => this.stepsState());
+  currentStep = computed(() => this.songSvc.currentStepState());
   songTitle = this.songSvc.songTitle;
 
   trackPaths = computed(() => this.songSvc.tracks()?.map(t => 'http://localhost:5244' + t.path));
@@ -87,7 +86,7 @@ export class SongComponent {
     }
 
     this.setIsPlaying(true);
-    this.stepsState.set(index);
+    this.songSvc.currentStepState.set(index);
 
     switch (index) {
       case 0:
@@ -135,7 +134,7 @@ export class SongComponent {
 
   private nextStep() {
     if (this.currentStep() < 4) {
-      this.stepsState.update((state) => state + 1);
+      this.songSvc.currentStepState.update((state) => state + 1);
     }
   }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using API.Data;
 using API.Data.Entities;
@@ -35,10 +36,28 @@ public static class IdentityServiceExtensions
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Token:Key"])),
-                    ValidIssuer = config["Token:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySecretKeyThatIsAtLeast16Characters")),
+                    ValidIssuer = "ThisIsMyIssuer",
                     ValidateIssuer = true,
-                    ValidateAudience = false
+                    ValidateAudience = true,
+                    ValidAudience = "ThisIsMyAudience",
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+                    NameClaimType = ClaimTypes.NameIdentifier
+                };
+                
+                opt.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("❌ Authentication failed: " + context.Exception.Message);
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine("✅ Token validated successfully");
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
