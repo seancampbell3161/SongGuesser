@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, inject, OnInit, output, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.css'
 })
-export class NavComponent {
+export class NavComponent implements OnInit {
   authSvc = inject(AuthService);
 
   darkModeOutput = output<boolean>();
@@ -24,12 +24,24 @@ export class NavComponent {
   email = '';
   password = '';
 
+  ngOnInit(): void {
+    const isDarkMode = localStorage.getItem('darkmode');
+
+    if (isDarkMode === 'true') {
+      this.toggleDarkMode();
+    }
+  }
+
   toggleDarkMode() {
     const element = document.querySelector('html');
     element?.classList.toggle('darkmode');
 
-    this.isDarkMode.set(element?.classList.contains('darkmode') ?? false);
-    this.darkModeOutput.emit(element?.classList.contains('darkmode') ?? false)
+    const isDarkMode = element?.classList.contains('darkmode') ?? false;
+
+    localStorage.setItem('darkmode', isDarkMode.toString())
+
+    this.isDarkMode.set(isDarkMode);
+    this.darkModeOutput.emit(isDarkMode);
   }
 
   login() {

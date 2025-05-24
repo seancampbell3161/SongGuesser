@@ -12,10 +12,8 @@ export class BusyService {
   constructor() { }
 
   busy(): void {
-    console.log('busy hit');
     this.busyRequestCount++;
 
-    console.log(this.busyRequestCount);
     this.spinnerSvc.show();
   }
 

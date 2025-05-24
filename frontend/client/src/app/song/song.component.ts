@@ -26,10 +26,21 @@ export class SongComponent {
 
   trackPaths = computed(() => this.songSvc.tracks()?.map(t => 'http://localhost:5244' + t.path));
 
-  private howls = computed(() => this.trackPaths()?.map(path => new Howl({ src: [path] })));
+  private howls = computed(() => this.trackPaths()?.map(path => {
+    const sound = new Howl({ 
+      src: [path], 
+      onload: () => this.duration.set(sound.duration()),
+    });
+    return sound;
+  }));
   private drums = computed(() => this.howls()?.at(0));
   private bass = computed(() => this.howls()?.at(1));
   private other = computed(() => this.howls()?.at(2));
+
+  duration = signal<number>(0);
+  currentTime = signal<number>(0);
+  widthPercent = computed(() => this.currentTime() / this.duration() * 100);
+  intervalId: any;
 
   sound!: Howl
 
@@ -54,13 +65,23 @@ export class SongComponent {
 
     effect(() => {
       if (!this.isPlaying() && this.howls()) {
-        this.howls()!.forEach(h => h.stop());
+        this.reset();
       }
     });
+
+    effect(() => {
+      if (this.widthPercent()) {
+        const div = document.getElementById(`progress${this.currentStep()}`);
+
+        if (div)
+          div.style.width = `${this.widthPercent()}%`;
+      }
+    })
   }
 
   playTracks(index: number) {
     if (this.isPlaying() === true) {
+      clearInterval(this.intervalId);
       this.setIsPlaying(false);
       this.howls()?.forEach(h => h.stop());
     }
@@ -85,6 +106,8 @@ export class SongComponent {
         this.howls()?.forEach(h => h.play());
         break;
     }
+
+    this.intervalId = setInterval(() => { this.currentTime.set(this.drums()!.seek()) }, 100);
   }
 
   setIsPlaying(val: boolean) {
@@ -93,10 +116,21 @@ export class SongComponent {
 
   skipGuess() {
     if (this.isPlaying()) {
-      this.setIsPlaying(false);
-      this.howls()?.forEach(h => h.stop());
+      this.reset();
     }
     this.nextStep();
+  }
+
+  private reset() {
+    this.setIsPlaying(false);
+    this.howls()!.forEach(h => h.stop());
+    clearInterval(this.intervalId);
+    this.currentTime.set(0);
+
+    const div = document.getElementById(`progress${this.currentStep()}`);
+
+    if (div)
+      div.style.width = '0%';
   }
 
   private nextStep() {
