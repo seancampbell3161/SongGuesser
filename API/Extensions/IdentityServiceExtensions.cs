@@ -50,12 +50,12 @@ public static class IdentityServiceExtensions
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        Console.WriteLine("❌ Authentication failed: " + context.Exception.Message);
+                        Console.WriteLine("Authentication failed: " + context.Exception.Message);
                         return Task.CompletedTask;
                     },
                     OnTokenValidated = context =>
                     {
-                        Console.WriteLine("✅ Token validated successfully");
+                        Console.WriteLine("Token validated successfully");
                         return Task.CompletedTask;
                     }
                 };

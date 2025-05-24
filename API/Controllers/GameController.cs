@@ -29,7 +29,8 @@ public class GameController(
 
         try
         {
-            var score = await context.UserScores.Where(x => x.UserId == user.Id)
+            var score = await context.UserScores
+                .Where(x => x.UserId == user.Id)
                 .Select(x => x.Score)
                 .SumAsync();
             return Ok(new UserTotalScoreDto

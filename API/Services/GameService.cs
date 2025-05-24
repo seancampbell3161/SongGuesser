@@ -6,7 +6,7 @@ namespace API.Services;
 public class GameService(IGameRepository gameRepository) : IGameService
 {
     public async Task<bool> ProcessUserGuessAsync(UserGuessDto userGuess)
-    {
+        {
         var isCorrect = await ValidateGuessAsync(userGuess.Guess);
 
         switch (isCorrect)

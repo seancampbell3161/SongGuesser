@@ -6,7 +6,7 @@ public class Worker(IServiceProvider services, ILogger<Worker> logger) : Backgro
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using PeriodicTimer timer = new(TimeSpan.FromDays(1));
+        using PeriodicTimer timer = new(TimeSpan.FromSeconds(10));
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
