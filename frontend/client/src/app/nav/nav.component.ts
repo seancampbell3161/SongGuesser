@@ -7,15 +7,20 @@ import { AuthService } from '../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
+import { TieredMenuModule } from 'primeng/tieredmenu';
+import { MenuItem } from 'primeng/api';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-nav',
-  imports: [NgClass, ButtonModule, Dialog, InputTextModule, FormsModule],
+  imports: [NgClass, ButtonModule, Dialog, InputTextModule, FormsModule, TieredMenuModule],
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.css'
 })
 export class NavComponent implements OnInit {
   authSvc = inject(AuthService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
 
   darkModeOutput = output<boolean>();
 
@@ -24,7 +29,17 @@ export class NavComponent implements OnInit {
   showRegister = signal(false);
 
   invalidAttempt = toSignal(this.authSvc.invalidLoginAttempt$);
+  invalidRegisterErrors = toSignal(this.authSvc.invalidRegisterAttempt$);
 
+  items: MenuItem[]= [
+    {
+      label: 'Logout',
+      icon: 'pi pi-file',
+      command: () => {
+        this.logout()
+      }
+    }
+  ]
   email = '';
   password = '';
 
@@ -60,6 +75,10 @@ export class NavComponent implements OnInit {
   }
 
   register() {
+    this.authSvc.register$.next({ email: this.email, password: this.password, loggedIn: false })
+  }
 
+  private logout() {
+    this.router.navigate(['/logout'], { relativeTo: this.route })
   }
 }

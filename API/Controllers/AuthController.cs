@@ -1,12 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Encodings.Web;
 using API.Data.Entities;
 using API.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
@@ -50,7 +48,9 @@ public class AuthController(
             // }
 
             await signInManager.SignInAsync(user, isPersistent: false);
-            return Ok(new { message = "User registered successfully" });
+
+            var token = GenerateJwtToken(user);
+            return Ok(new { Token = token});
         }
 
         return BadRequest(result.Errors);

@@ -8,5 +8,9 @@ export const routes: Routes = [
     {
         path: 'upload',
         loadComponent: () => import('./upload/upload.component')
+    },
+    {
+        path: 'logout',
+        loadComponent: () => import('./user/logout/logout.component')
     }
 ];
