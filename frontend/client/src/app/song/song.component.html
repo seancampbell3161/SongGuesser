@@ -2,6 +2,10 @@
     <div class="container d-flex flex-column align-items-center justify-content-center mt-4 gap-3">
         <h1 [ngClass]="isDarkMode() ? 'gray' : ''">Songle.xyz</h1>
 
+        @if (!trackPaths()) {
+            <h3>The song has not been chosen yet. Come back later!</h3>
+        }
+
         @if (trackPaths() && trackPaths()?.length! > 0) {
             @for (trackPath of trackPaths(); track trackPath; let i = $index) {
                 <div class="track" [ngClass]="currentStep() === i ? 'active' : 'not-active'">
@@ -10,9 +14,8 @@
                     <i class="{{icons[i]}}"></i>
                 </div>
             }
-        }
 
-        <div class="mt-4 d-flex gap-3">
+            <div class="mt-4 d-flex gap-3">
                 @if (!isPlaying()) {
                     <div class="play-btn" (click)="playTracks(currentStep())">
                         <i class="fa-solid fa-play fa-2xl"></i>
@@ -22,6 +25,7 @@
                         <i class="fa-solid fa-pause fa-2xl"></i>
                     </div>                   
                 }
-        </div>
+            </div>
+        } 
     </div>
 </div>

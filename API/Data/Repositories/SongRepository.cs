@@ -84,7 +84,7 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
         }
     }
 
-    public async Task<SongDto> GetSongAsync(int songId)
+    public async Task<SongDto?> GetSongAsync(int songId)
     {
         try
         {
@@ -95,12 +95,12 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
 
             if (song == null)
             {
-                throw new KeyNotFoundException();
+                return null;
             }
 
             return new SongDto
             {
-                ArtistName = song.Artist.Name,
+                ArtistName = song.Artist?.Name ?? string.Empty,
                 Title = song.Title,
                 Tracks = song.Tracks.Select(x => new TrackDto { Name = x.Name, Path = x.Path }).ToList()
             };
@@ -108,11 +108,11 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            throw new Exception(ex.Message);
+            return null;
         }
     }
 
-    public async Task<SongDto> GetRandomSongAsync()
+    public async Task<SongDto?> GetRandomSongAsync()
     {
         try
         {

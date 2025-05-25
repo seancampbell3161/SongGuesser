@@ -9,5 +9,6 @@ public interface IGameRepository
     Task<UserScoreDto> GetUserScoreAsync(string userId);
     Task<List<UserScoreDto>> GetHighScoresAsync();
     Task<SongOfTheDay?> GetSongOfTheDayAsync();
+    Task<int> GetSongOfTheDaySongIdAsync();
     Task AddNewSongOfTheDayAsync();
 }

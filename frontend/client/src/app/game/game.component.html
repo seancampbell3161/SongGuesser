@@ -1,5 +1,7 @@
 <div class="game">
-    <input type="text" pInputText [(ngModel)]="guess" placeholder="Guess song or artist" />
-    <p-button (onClick)="gameSvc.sendGuess$.next(guess)" label="Submit" [raised]="true" severity="primary" [disabled]="guess.length === 0"></p-button>
-    <p-button (onClick)="songSvc.skipGuess$.next()" label="Skip" [raised]="true" severity="secondary" [disabled]="songSvc.currentStepState() > 4"></p-button>
+    @if (songSvc.song()) {
+        <input type="text" pInputText [(ngModel)]="guess" placeholder="Guess song or artist" />
+        <p-button (onClick)="gameSvc.sendGuess$.next(guess)" label="Submit" [raised]="true" severity="primary" [disabled]="guess.length === 0"></p-button>
+        <p-button (onClick)="songSvc.skipGuess$.next()" label="Skip" [raised]="true" severity="secondary" [disabled]="songSvc.currentStepState() > 4"></p-button>
+    }
 </div>

@@ -11,4 +11,5 @@ public class Song
     public Artist? Artist { get; init; }
 
     public ICollection<Track> Tracks { get; init; } = [];
+    public ICollection<SongOfTheDay>? SongOfTheDays { get; set; }
 }

@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Song } from '../interfaces/song';
-import { Subject, catchError, of, switchMap } from 'rxjs';
+import { EMPTY, Subject, catchError, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
@@ -18,14 +18,29 @@ export class SongService {
   artist = computed(() => this.songState()?.artistName);
   tracks = computed(() => this.songState()?.tracks);
 
-  loadRandomSong$ = new Subject<null>();
+  loadSongOfTheDay$ = new Subject<void>();
+  loadRandomSong$ = new Subject<void>();
   skipGuess$ = new Subject<void>();
 
   constructor() {
+    this.loadSongOfTheDay$.pipe(
+      takeUntilDestroyed(),
+      switchMap(() => this.http.get<Song>(`http://localhost:5244/api/Music/song`).pipe(
+        catchError((err) => {
+          console.error(err);
+          return EMPTY;
+        })
+      )),
+    ).subscribe((res) => 
+      this.songState.set(res)
+    );
+
     this.loadRandomSong$.pipe(
       takeUntilDestroyed(),
       switchMap(() => this.http.get<Song>(`http://localhost:5244/api/Music/random`)),
       catchError(() => of(null)),
-    ).subscribe((res) => this.songState.set(res));
+    ).subscribe((res) => 
+      this.songState.set(res)
+    );
   }
 }

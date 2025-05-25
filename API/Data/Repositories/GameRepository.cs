@@ -2,7 +2,6 @@ using API.Data.Entities;
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace API.Data.Repositories;
 
@@ -34,10 +33,10 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
             var result = await context.UserScores
                 .Join(context.Users, userScore => userScore.UserId, user => user.Id, (userScore, user) => new
                 {
-                    UserId = userScore.UserId,
-                    UserName = user.UserName,
-                    Score = userScore.Score,
-                    NumOfGuesses = userScore.NumOfGuesses
+                    userScore.UserId,
+                    user.UserName,
+                    userScore.Score,
+                    userScore.NumOfGuesses
                 })
                 .Where(x => x.UserId == userId)
                 .GroupBy(x => x.UserId)
@@ -64,9 +63,9 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
             var result = await context.UserScores
                 .Join(context.Users, userScore => userScore.UserId, user => user.Id, (userScore, user) => new
                 {
-                    UserId = userScore.UserId,
-                    UserName = user.UserName,
-                    Score = userScore.Score
+                    userScore.UserId,
+                    user.UserName,
+                    userScore.Score
                 })
                 .GroupBy(x => x.UserName)
                 .Select(x => new UserScoreDto
@@ -95,6 +94,14 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
         return entity;
     }
 
+    public async Task<int> GetSongOfTheDaySongIdAsync()
+    {
+        var entity = await context.SongsOfTheDay
+            .FirstOrDefaultAsync(x => x.CreatedUtc.Day == DateTime.UtcNow.Day);
+
+        return entity?.SongId ?? 0;
+    }
+
     public async Task AddNewSongOfTheDayAsync()
     {
         try
@@ -108,7 +115,7 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
                 .Include(s => s.Artist)
                 .Select(s => new
                 {
-                    Id = s.Id,
+                    s.Id,
                     Song = s.Title,
                     Artist = s.Artist != null ? s.Artist.Name : string.Empty
                 })
@@ -119,7 +126,8 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
             context.SongsOfTheDay.Add(new SongOfTheDay
             {
                 Artist = song.Artist,
-                Song = song.Song,
+                SongId = song.Id,
+                SongTitle = song.Song,
                 CreatedUtc = DateTime.UtcNow
             });
 

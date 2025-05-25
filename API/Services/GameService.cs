@@ -34,7 +34,7 @@ public class GameService(IGameRepository gameRepository) : IGameService
 
         if (songOfTheDay == null) return false;
 
-        var isCorrect = string.Equals(guess.Trim(), songOfTheDay.Song, StringComparison.CurrentCultureIgnoreCase)
+        var isCorrect = string.Equals(guess.Trim(), songOfTheDay.SongTitle, StringComparison.CurrentCultureIgnoreCase)
                         || string.Equals(guess.Trim(), songOfTheDay.Artist, StringComparison.CurrentCultureIgnoreCase);
 
         return isCorrect;

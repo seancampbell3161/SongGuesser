@@ -1,6 +1,6 @@
-import { computed, effect, inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { catchError, EMPTY, EmptyError, of, Subject, switchMap } from "rxjs";
+import { catchError, EMPTY, Subject, switchMap } from "rxjs";
 import { User } from "../user/user";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 

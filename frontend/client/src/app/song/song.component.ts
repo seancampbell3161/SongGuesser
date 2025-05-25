@@ -60,7 +60,7 @@ export class SongComponent {
   ];
 
   constructor() {
-    this.songSvc.loadRandomSong$.next(null);
+    this.songSvc.loadSongOfTheDay$.next();
 
     effect(() => {
       if (!this.isPlaying() && this.howls()) {

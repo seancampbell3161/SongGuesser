@@ -1,17 +1,34 @@
 using API.DTOs;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-// [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MusicController(
     IAudioService audioService,
-    ISongRepository songRepository)
+    ISongRepository songRepository,
+    IGameRepository gameRepository)
     : ControllerBase
 {
+    [HttpGet("song")]
+    public async Task<IActionResult> GetSongOfTheDay()
+    {
+        var songId = await gameRepository.GetSongOfTheDaySongIdAsync();
+
+        if (songId == 0) return Ok(null);
+
+        var song = await songRepository.GetSongAsync(songId);
+
+        if (song == null) return Ok(null);
+
+        song.Tracks = OrderTracks(song);
+
+        return Ok(song);
+    }
+
     [HttpGet("random")]
     public async Task<IActionResult> GetRandomSongTracks()
     {
@@ -19,14 +36,12 @@ public class MusicController(
         {
             var response = await songRepository.GetRandomSongAsync();
 
-            List<TrackDto> ordered = [];
-            
-            ordered.Add(response.Tracks.First(x => x.Name.Contains("drum")));
-            ordered.Add(response.Tracks.First(x => x.Name.Contains("bass")));
-            ordered.Add(response.Tracks.First(x => x.Name.Contains("other")));
-            ordered.Add(response.Tracks.First(x => x.Name.Contains("vocal")));
+            if (response == null)
+            {
+                return Ok(null);
+            }
 
-            response.Tracks = ordered;
+            response.Tracks = OrderTracks(response);
             
             return Ok(response);
         }
@@ -35,7 +50,8 @@ public class MusicController(
             return StatusCode(500);
         }
     }
-
+    
+    [Authorize]
     [HttpPost("convert")]
     public async Task<IActionResult> ConvertAsync([FromForm] string url)
     {
@@ -48,6 +64,7 @@ public class MusicController(
         return Ok(result);
     }
 
+    [Authorize]
     [HttpPost("separate")]
     public async Task<IActionResult> SeparateTracksAsync([FromForm] IFormFile file)
     {
@@ -69,7 +86,8 @@ public class MusicController(
         var result = await audioService.SeparateTracksAsync(convertResult);
         return Ok(result);
     }
-
+    
+    [Authorize]
     [HttpPost("convert-and-separate")]
     public async Task<IActionResult> ConvertAndSeparateAsync([FromBody] YouTubeRequest request)
     {
@@ -95,5 +113,17 @@ public class MusicController(
         }
 
         return Ok(result);
+    }
+    
+    private List<TrackDto> OrderTracks(SongDto song)
+    {
+        List<TrackDto> ordered = [];
+            
+        ordered.Add(song.Tracks.First(x => x.Name.Contains("drum")));
+        ordered.Add(song.Tracks.First(x => x.Name.Contains("bass")));
+        ordered.Add(song.Tracks.First(x => x.Name.Contains("other")));
+        ordered.Add(song.Tracks.First(x => x.Name.Contains("vocal")));
+
+        return ordered;
     }
 }
