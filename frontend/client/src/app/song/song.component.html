@@ -3,7 +3,7 @@
         <h1 [ngClass]="isDarkMode() ? 'gray' : ''">Songle.xyz</h1>
 
         @if (!trackPaths()) {
-            <h3>The song has not been chosen yet. Come back later!</h3>
+            <h3 [ngClass]="isDarkMode() ? 'gray' : ''">The song has not been chosen yet. Come back later!</h3>
         }
 
         @if (trackPaths() && trackPaths()?.length! > 0) {

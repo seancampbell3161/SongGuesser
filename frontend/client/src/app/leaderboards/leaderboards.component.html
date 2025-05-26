@@ -1,0 +1,26 @@
+<div class="nav">
+    <app-nav (darkModeOutput)="toggleDarkmode($event)"></app-nav>
+</div>
+@if (leaderboard()) {
+    <div class="leaderboards-container">
+        <div class="mt-4">
+            <h1 class="mb-4 text-center" [ngClass]="isDarkMode() ? 'gray' : ''">Hiscores</h1>
+            <p-table [value]="leaderboard() ?? []" [tableStyle]="{ 'min-width': '40rem' }" [ngClass]="isDarkMode() ? 'gray' : ''">
+            <ng-template #header>
+                <tr>
+                    <th>Rank</th>
+                    <th>Username</th>
+                    <th>Score</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-user let-i="rowIndex">
+                <tr>
+                    <td>{{i + 1}}</td>
+                    <td>{{ user.userName }}</td>
+                    <td>{{ user.totalScore }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        </div>
+    </div>
+}

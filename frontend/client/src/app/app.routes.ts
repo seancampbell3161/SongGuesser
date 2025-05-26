@@ -10,6 +10,10 @@ export const routes: Routes = [
         loadComponent: () => import('./upload/upload.component')
     },
     {
+        path: 'leaderboards',
+        loadComponent: () => import('./leaderboards/leaderboards.component')
+    },
+    {
         path: 'logout',
         loadComponent: () => import('./user/logout/logout.component')
     }

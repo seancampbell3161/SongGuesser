@@ -61,6 +61,7 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
         try
         {
             var result = await context.UserScores
+                .Where(x => x.Score > 0)
                 .Join(context.Users, userScore => userScore.UserId, user => user.Id, (userScore, user) => new
                 {
                     userScore.UserId,
@@ -68,13 +69,13 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
                     userScore.Score
                 })
                 .GroupBy(x => x.UserName)
+                .Take(10)
                 .Select(x => new UserScoreDto
                 {
                     UserName = x.Key ?? "",
                     TotalScore = x.Sum(y => y.Score)
                 })
                 .OrderByDescending(x => x.TotalScore)
-                .Take(5)
                 .ToListAsync();
 
             return result;

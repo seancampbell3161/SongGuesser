@@ -1,9 +1,10 @@
 import { HttpClient } from "@angular/common/http";
-import { computed, inject, Injectable, signal } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { catchError, of, Subject, switchMap } from "rxjs";
+import { catchError, EMPTY, of, Subject, switchMap } from "rxjs";
 import { SongService } from "../../song/data-access/song.service";
 import { UserGuess } from "../interfaces/user-guess";
+import { UserScore } from "../../user/user-score";
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,12 @@ export class GameService {
     private songSvc = inject(SongService);
 
     isGuessCorrect$ = new Subject<boolean>();
-    
     sendGuess$ = new Subject<string>();
+
+    loadLeaderboard$ = this.http.get<UserScore[]>(`http://localhost:5244/api/Game/leaderboard`).pipe(
+        takeUntilDestroyed(),
+        catchError(() => EMPTY)
+    );
 
     constructor() {
         this.sendGuess$.pipe(

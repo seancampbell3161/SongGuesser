@@ -6,7 +6,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { AuthService } from '../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { MenuItem } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,8 +32,13 @@ export class NavComponent implements OnInit {
 
   items: MenuItem[]= [
     {
+      label: 'Hiscores',
+      icon: 'fa-solid fa-list',
+      command: () => this.goToHiscores()
+    },
+    {
       label: 'Logout',
-      icon: 'pi pi-file',
+      icon: 'fa-solid fa-arrow-right-from-bracket',
       command: () => {
         this.logout()
       }
@@ -78,7 +82,11 @@ export class NavComponent implements OnInit {
     this.authSvc.register$.next({ email: this.email, password: this.password, loggedIn: false })
   }
 
+  private goToHiscores() {
+    this.router.navigate(['/leaderboards'], { relativeTo: this.route });
+  }
+
   private logout() {
-    this.router.navigate(['/logout'], { relativeTo: this.route })
+    this.router.navigate(['/logout'], { relativeTo: this.route });
   }
 }
