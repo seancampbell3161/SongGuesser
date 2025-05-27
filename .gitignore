@@ -86,4 +86,5 @@ API/Downloads
 .db
 .db-shm
 .db-wal
-API/appsettings.jsonAPI/*.db
+API/appsettings.json
+API/*.db
