@@ -36,8 +36,6 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
             Console.WriteLine(ex);
             return null;
         }
-
-        return null;
     }
 
     public async Task AddUserScoreAsync(UserResultDto result)
@@ -45,6 +43,13 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
         // TODO remove try catches once setup middleware
         try
         {
+            var existing = await context.UserScores
+                .FirstOrDefaultAsync(x => x.UserId == result.UserId
+                                          && x.CreatedUtc.Day ==
+                                          DateTime.UtcNow.Day);
+            
+            if (existing != null) throw new Exception("You have already played today's song!");
+            
             context.UserScores.Add(new UserScore
             {
                 UserId = result.UserId,
