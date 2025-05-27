@@ -62,4 +62,8 @@ export class AuthService {
             }
         })
     }
+
+    clearToken() {
+        this.authToken.set(null);
+    }
 }

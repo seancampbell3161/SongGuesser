@@ -56,8 +56,9 @@ export class NavComponent implements OnInit {
 
   ngOnInit(): void {
     const isDarkMode = localStorage.getItem('darkmode');
+    const element = document.querySelector('html');
 
-    if (isDarkMode === 'true') {
+    if (isDarkMode === 'true' && !element?.classList.contains('darkmode')) {
       this.toggleDarkMode();
     }
   }

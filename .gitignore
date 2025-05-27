@@ -83,8 +83,7 @@ API/Uploads
 API/SeparatedTracks
 API/Downloads
 
-.db
-.db-shm
-.db-wal
 API/appsettings.json
 API/*.db
+API/MyApp.db-shm
+API/MyApp.db-wal
