@@ -24,7 +24,7 @@ export class GameService {
     constructor() {
         this.sendGuess$.pipe(
             takeUntilDestroyed(),
-            switchMap((guess) => this.http.post<boolean>(`http://localhost:5244/api/Game`, { guess: guess, guessNumber: this.songSvc.currentStepState() } as UserGuess)),
+            switchMap((guess) => this.http.post<boolean>(`http://localhost:5244/api/Game`, { guess: guess, songId: this.songSvc.song()?.songId } as UserGuess)),
             catchError(() => of(null)),
         ).subscribe(res => 
             this.isGuessCorrect$.next(!!res)

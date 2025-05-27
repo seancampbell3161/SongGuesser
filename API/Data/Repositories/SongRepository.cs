@@ -100,6 +100,7 @@ public class SongRepository(ApplicationDbContext context) : ISongRepository
 
             return new SongDto
             {
+                SongId = song.Id,
                 ArtistName = song.Artist?.Name ?? string.Empty,
                 Title = song.Title,
                 Tracks = song.Tracks.Select(x => new TrackDto { Name = x.Name, Path = x.Path }).ToList()
