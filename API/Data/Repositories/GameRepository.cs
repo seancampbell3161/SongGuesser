@@ -7,8 +7,42 @@ namespace API.Data.Repositories;
 
 public class GameRepository(ApplicationDbContext context) : IGameRepository
 {
+    public async Task<int?> AddUserGuessAsync(UserGuessDto guess)
+    {
+        try
+        {
+            var existingNumOfGuesses = await context.UserGuesses
+                .Where(x => x.UserId == guess.UserId
+                            && x.SongId == guess.SongId
+                            && x.CreatedUtc.Day == DateTime.UtcNow.Day)
+                .CountAsync();
+
+            if (existingNumOfGuesses == 4) return null;
+
+            context.UserGuesses.Add(new UserGuess
+            {
+                UserId = guess.UserId,
+                SongId = guess.SongId,
+                Guess = guess.Guess,
+                CreatedUtc = DateTime.UtcNow
+            });
+
+            await context.SaveChangesAsync();
+
+            return existingNumOfGuesses + 1;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return null;
+        }
+
+        return null;
+    }
+
     public async Task AddUserScoreAsync(UserResultDto result)
     {
+        // TODO remove try catches once setup middleware
         try
         {
             context.UserScores.Add(new UserScore

@@ -1,3 +1,3 @@
 namespace API.DTOs;
 
-public record UserGuessDto(string Guess, int GuessNumber, string UserId = "");
+public record UserGuessDto(string Guess, int SongId, string UserId = "");

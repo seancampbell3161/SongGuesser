@@ -6,19 +6,23 @@ namespace API.Services;
 public class GameService(IGameRepository gameRepository) : IGameService
 {
     public async Task<bool> ProcessUserGuessAsync(UserGuessDto userGuess)
-        {
+    {
+        var addGuess = await gameRepository.AddUserGuessAsync(userGuess);
+
+        if (addGuess == null) return false;
+        
         var isCorrect = await ValidateGuessAsync(userGuess.Guess);
 
         switch (isCorrect)
         {
-            case false when userGuess.GuessNumber != 4:
+            case false when addGuess != 4:
                 return isCorrect;
             case false:
-                await gameRepository.AddUserScoreAsync(new UserResultDto(userGuess.UserId, 0, userGuess.GuessNumber));
+                await gameRepository.AddUserScoreAsync(new UserResultDto(userGuess.UserId, 0, (int)addGuess));
                 return isCorrect;
             case true:
-                var score = CalculateUserScore(userGuess.GuessNumber);
-                await gameRepository.AddUserScoreAsync(new UserResultDto(userGuess.UserId, score, userGuess.GuessNumber));
+                var score = CalculateUserScore((int)addGuess);
+                await gameRepository.AddUserScoreAsync(new UserResultDto(userGuess.UserId, score, (int)addGuess));
                 return isCorrect;
         }
     }

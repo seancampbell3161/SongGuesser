@@ -4,5 +4,6 @@ namespace API.Data.Entities;
 
 public class ApplicationUser : IdentityUser
 {
-    public ICollection<UserScore> UserScores { get; set; } = [];
+    public ICollection<UserGuess> UserGuesses { get; init; } = [];
+    public ICollection<UserScore> UserScores { get; init; } = [];
 }

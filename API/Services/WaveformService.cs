@@ -27,12 +27,16 @@ public class WaveformService : IWaveformService
                 };
 
                 using var process = Process.Start(startInfo);
-                var output = await process?.StandardOutput.ReadToEndAsync()!;
+
+                // TODO: add logging
+                if (process == null) return;
+                
+                var output = await process.StandardOutput.ReadToEndAsync();
                 var error = await process.StandardError.ReadToEndAsync();
 
                 await process.WaitForExitAsync();
 
-                if (!string.IsNullOrEmpty(error))
+                if (!string.IsNullOrWhiteSpace(error))
                 {
                     Console.WriteLine(error);
                 }

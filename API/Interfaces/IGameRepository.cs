@@ -5,6 +5,7 @@ namespace API.Interfaces;
 
 public interface IGameRepository
 {
+    Task<int?> AddUserGuessAsync(UserGuessDto guess);
     Task AddUserScoreAsync(UserResultDto result);
     Task<UserScoreDto> GetUserScoreAsync(string userId);
     Task<List<UserScoreDto>> GetHighScoresAsync();
