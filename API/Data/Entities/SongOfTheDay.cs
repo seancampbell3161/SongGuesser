@@ -14,5 +14,5 @@ public class SongOfTheDay
     public string SongTitle { get; init; } = string.Empty;
     public DateTime CreatedUtc { get; init; } = DateTime.UtcNow;
 
-    public Song Song { get; set; }
+    public Song Song { get; init; }
 }

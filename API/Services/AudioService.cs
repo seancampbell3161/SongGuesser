@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json;
 using API.DTOs;
 using API.DTOs.Constants;
 using API.Interfaces;
@@ -28,13 +27,13 @@ public class AudioService(IWaveformService waveformService) : IAudioService
         };
 
         string result;
-        string error;
+        
         using (var process = new Process())
         {
             process.StartInfo = startInfo;
             process.Start();
             result = await process.StandardOutput.ReadToEndAsync();
-            error = await process.StandardError.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
 
             if (process.ExitCode != 0)
@@ -108,14 +107,14 @@ public class AudioService(IWaveformService waveformService) : IAudioService
         };
 
         string result;
-        string error;
+        
         using (var process = new Process())
         {
             process.StartInfo = startInfo;
             process.Start();
             result = await process.StandardOutput.ReadToEndAsync();
-            error = await process.StandardError.ReadToEndAsync();
-            process.WaitForExit();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
 
             if (process.ExitCode != 0)
             {
@@ -148,11 +147,6 @@ public class AudioService(IWaveformService waveformService) : IAudioService
 
     public async Task<SeparateResult> SeparateTracksAsync(ConvertResult convertedMp3)
     {
-        if (convertedMp3?.FilePath == null)
-        {
-            return new SeparateResult() { Error = "URL cannot be null" };
-        }
-
         try
         {
             if (convertedMp3.FilePath.StartsWith('/'))
@@ -184,13 +178,13 @@ public class AudioService(IWaveformService waveformService) : IAudioService
             };
 
             string result;
-            string error;
+            
             using (var process = new Process())
             {
                 process.StartInfo = startInfo;
                 process.Start();
                 result = await process.StandardOutput.ReadToEndAsync();
-                error = await process.StandardError.ReadToEndAsync();
+                var error = await process.StandardError.ReadToEndAsync();
                 await process.WaitForExitAsync();
 
                 if (process.ExitCode != 0)

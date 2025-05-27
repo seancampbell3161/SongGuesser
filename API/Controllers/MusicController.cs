@@ -91,10 +91,9 @@ public class MusicController(
     [HttpPost("convert-and-separate")]
     public async Task<IActionResult> ConvertAndSeparateAsync([FromBody] YouTubeRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Url))
-        {
-            return BadRequest("URL cannot be null");
-        }
+        if (string.IsNullOrWhiteSpace(request.Url)) return BadRequest("You must enter a URL");
+        if (string.IsNullOrWhiteSpace(request.SongTitle)) return BadRequest("You must enter a song name");
+        if (string.IsNullOrWhiteSpace(request.Artist)) return BadRequest("You must enter an Artist name");
 
         var result = await audioService.ConvertAndSeparateTracksAsync(request.Url);
 
@@ -115,7 +114,7 @@ public class MusicController(
         return Ok(result);
     }
     
-    private List<TrackDto> OrderTracks(SongDto song)
+    private static List<TrackDto> OrderTracks(SongDto song)
     {
         List<TrackDto> ordered = [];
             
