@@ -16,6 +16,7 @@ export class SongComponent {
   private songSvc = inject(SongService);
 
   isDarkMode = input<boolean>();
+  gameWon = input<boolean | undefined>();
 
   private isPlayingState = signal<boolean>(false);
 

@@ -7,6 +7,11 @@ public class GameService(IGameRepository gameRepository) : IGameService
 {
     public async Task<bool> ProcessUserGuessAsync(UserGuessDto userGuess)
     {
+        var userFinishedSong = await gameRepository.ValidateUserFinishedSongAsync(userGuess);
+
+        // TODO: add messages
+        if (userFinishedSong) return false;
+        
         var addGuess = await gameRepository.AddUserGuessAsync(userGuess);
 
         if (addGuess == null) return false;

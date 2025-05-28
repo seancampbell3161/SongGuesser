@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { SongService } from '../song/data-access/song.service';
 import { ButtonModule } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
@@ -17,12 +17,16 @@ export class GameComponent {
   songSvc = inject(SongService);
   gameSvc = inject(GameService);
 
+  gameWon = input<boolean | undefined>();
+
   guessResponse = toSignal(this.gameSvc.isGuessCorrect$.pipe(tap((isCorrect) => {
     if (!isCorrect) {
       this.songSvc.skipGuess$.next();
       this.guess = '';
+    } else {
+      this.gameSvc.gameWon$.next(true);
     }
-  })))
+  })));
 
   guess: string = '';
 

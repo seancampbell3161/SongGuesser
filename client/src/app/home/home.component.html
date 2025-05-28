@@ -2,8 +2,13 @@
     <app-nav (darkModeOutput)="toggleDarkmode($event)"></app-nav>
 </div>
 <div class="row">
-    <app-song [isDarkMode]="isDarkMode()"></app-song>
+    <app-song [isDarkMode]="isDarkMode()" [gameWon]="gameWon()"></app-song>
 </div>
 <div class="row mt-2">
-    <app-game></app-game>
+    <app-game [gameWon]="gameWon()"></app-game>
 </div>
+@if (gameWon()) {
+    <div class="row mt-4 d-flex justify-content-center">
+        <h2 class="text-center" [ngClass]="isDarkMode() ? 'gray' : ''">You won! Congratulations!</h2>
+    </div>
+}

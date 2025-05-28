@@ -32,6 +32,11 @@ export class NavComponent implements OnInit {
 
   items: MenuItem[]= [
     {
+      label: 'Home',
+      icon: 'fa-solid fa-house',
+      command: () => this.goToHome()
+    },
+    {
       label: 'Hiscores',
       icon: 'fa-solid fa-list',
       command: () => this.goToHiscores()
@@ -81,6 +86,10 @@ export class NavComponent implements OnInit {
 
   register() {
     this.authSvc.register$.next({ email: this.email, password: this.password, loggedIn: false })
+  }
+
+  private goToHome() {
+    this.router.navigate(['/']);
   }
 
   private goToHiscores() {

@@ -12,4 +12,5 @@ public interface IGameRepository
     Task<SongOfTheDay?> GetSongOfTheDayAsync();
     Task<int> GetSongOfTheDaySongIdAsync();
     Task AddNewSongOfTheDayAsync();
+    Task<bool> ValidateUserFinishedSongAsync(UserGuessDto userGuess);
 }

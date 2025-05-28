@@ -15,6 +15,7 @@ export class GameService {
 
     isGuessCorrect$ = new Subject<boolean>();
     sendGuess$ = new Subject<string>();
+    gameWon$ = new Subject<boolean>();
 
     loadLeaderboard$ = this.http.get<UserScore[]>(`http://localhost:5244/api/Game/leaderboard`).pipe(
         takeUntilDestroyed(),

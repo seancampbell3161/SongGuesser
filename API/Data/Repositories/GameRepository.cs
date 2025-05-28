@@ -178,4 +178,13 @@ public class GameRepository(ApplicationDbContext context) : IGameRepository
             Console.WriteLine(ex);
         }
     }
+
+    public async Task<bool> ValidateUserFinishedSongAsync(UserGuessDto userGuess)
+    {
+        var entity = await context.UserScores
+            .FirstOrDefaultAsync(x => x.UserId == userGuess.UserId
+                && x.CreatedUtc.Day == DateTime.UtcNow.Day);
+
+        return entity != null;
+    }
 }
