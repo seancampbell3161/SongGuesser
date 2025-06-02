@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<UserScore> UserScores { get; init; }
     public DbSet<SongOfTheDay> SongsOfTheDay { get; init; }
     public DbSet<UserGuess> UserGuesses { get; init; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
@@ -40,5 +41,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(t => t.WaveformData)
             .WithOne(wf => wf.Track)
             .HasForeignKey<Track>(t => t.WaveformId);
+
+        builder.Entity<RefreshToken>()
+            .HasIndex(r => r.Token)
+            .IsUnique();
     }
 }

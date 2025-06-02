@@ -26,9 +26,9 @@ export class GameService {
         this.sendGuess$.pipe(
             takeUntilDestroyed(),
             switchMap((guess) => this.http.post<boolean>(`http://localhost:5244/api/Game`, { guess: guess, songId: this.songSvc.song()?.songId } as UserGuess)),
-            catchError(() => of(null)),
-        ).subscribe(res => 
-            this.isGuessCorrect$.next(!!res)
-        );
+        ).subscribe({
+            next: (res) => this.isGuessCorrect$.next(!!res),
+            error: (err) => console.error(err)
+        });
     }
 }

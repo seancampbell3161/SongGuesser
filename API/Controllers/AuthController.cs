@@ -1,10 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using API.Data;
 using API.Data.Entities;
 using API.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
@@ -14,6 +17,7 @@ namespace API.Controllers;
 public class AuthController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
+    ApplicationDbContext context,
     IConfiguration configuration)
     : ControllerBase
 {
@@ -49,8 +53,18 @@ public class AuthController(
 
             await signInManager.SignInAsync(user, isPersistent: false);
 
-            var token = GenerateJwtToken(user);
-            return Ok(new { Token = token});
+            var authToken = GenerateJwtToken(user);
+            var refreshToken = await GenerateRefreshToken(user);
+            
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddMonths(1)
+            });
+            
+            return Ok(new { Token = authToken});
         }
 
         return BadRequest(result.Errors);
@@ -70,9 +84,51 @@ public class AuthController(
         if (!result.Succeeded)
             return Unauthorized(result.IsLockedOut ? "Account locked out." : "Invalid login attempt");
         
-        var token = GenerateJwtToken(user);
-        return Ok(new { Token = token });
+        var authToken = GenerateJwtToken(user);
+        var refreshToken = await GenerateRefreshToken(user);
+        
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMonths(1)
+        });
+        
+        return Ok(new { Token = authToken });
+    }
 
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        if (!Request.Cookies.TryGetValue("refreshToken", out var incomingRefreshToken))
+            return Unauthorized(new { error = "no_refresh_token" });
+
+        var existingToken = await context.RefreshTokens
+            .OrderByDescending(rt => rt.CreatedUtc)
+            .Include(rt => rt.ApplicationUser)
+            .FirstOrDefaultAsync(rt => rt.Token == incomingRefreshToken);
+
+        if (existingToken == null || existingToken.IsRevoked || existingToken.ExpiresUtc < DateTime.UtcNow)
+            return Unauthorized(new { error = "invalid_refresh_token" });
+
+        existingToken.IsRevoked = true;
+        context.RefreshTokens.Update(existingToken);
+
+        var user = existingToken.ApplicationUser;
+        
+        var authToken = GenerateJwtToken(user);
+        var refreshToken = await GenerateRefreshToken(user);
+        
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMonths(1)
+        });
+
+        return Ok(new { Token = authToken });
     }
 
     private string GenerateJwtToken(ApplicationUser user)
@@ -95,9 +151,27 @@ public class AuthController(
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddHours(4),
+            expires: DateTime.UtcNow.AddHours(4),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    
+    private async Task<string> GenerateRefreshToken(ApplicationUser user)
+    {
+        var tokenValue = Guid.NewGuid().ToString("N")
+                         + Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        context.RefreshTokens.Add(new RefreshToken
+        {
+            Token = tokenValue,
+            UserId = user.Id,
+            ExpiresUtc = DateTime.UtcNow.AddMonths(1),
+            CreatedUtc = DateTime.UtcNow
+        });
+
+        await context.SaveChangesAsync();
+
+        return tokenValue;
     }
 }

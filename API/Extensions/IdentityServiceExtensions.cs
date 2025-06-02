@@ -50,6 +50,16 @@ public static class IdentityServiceExtensions
                 {
                     OnAuthenticationFailed = context =>
                     {
+                        if (context.Exception is SecurityTokenExpiredException expiredException)
+                        {
+                            context.NoResult();
+                            context.Response.Headers.Append("Token-Expired", "true");
+                            context.Response.ContentType = "text/plain";
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.WriteAsync("The token is expired").Wait();
+                            context.Response.CompleteAsync().Wait();
+                        }
+                        
                         Console.WriteLine("Authentication failed: " + context.Exception.Message);
                         return Task.CompletedTask;
                     },
