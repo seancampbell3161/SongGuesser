@@ -8,7 +8,11 @@
     <app-game [gameWon]="gameWon()"></app-game>
 </div>
 @if (gameWon()) {
-    <div class="row mt-4 d-flex justify-content-center">
-        <h2 class="text-center" [ngClass]="isDarkMode() ? 'gray' : ''">You won! Congratulations!</h2>
-    </div>
+    <p-dialog header="Edit Profile" [modal]="true" [style]="{ width: '25rem' }">
+        <span class="p-text-secondary block mb-8">You won!</span>
+        <!-- <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="secondary" (click)="visible = false" />
+            <p-button label="Save" (click)="visible = false" />
+        </div> -->
+    </p-dialog>
 }

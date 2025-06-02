@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Interfaces;
+using BadHttpRequestException = Microsoft.AspNetCore.Server.IIS.BadHttpRequestException;
 
 namespace API.Services;
 
@@ -10,7 +11,7 @@ public class GameService(IGameRepository gameRepository) : IGameService
         var userFinishedSong = await gameRepository.ValidateUserFinishedSongAsync(userGuess);
 
         // TODO: add messages
-        if (userFinishedSong) return false;
+        if (userFinishedSong) throw new InvalidOperationException("User has already completed today's song");
         
         var addGuess = await gameRepository.AddUserGuessAsync(userGuess);
 

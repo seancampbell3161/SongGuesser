@@ -52,9 +52,15 @@ public class GameController(
             return Unauthorized();
         }
 
-        var result = await gameService.ProcessUserGuessAsync(guess with { UserId = user.Id });
-        
-        return Ok(result);
+        try
+        {
+            var result = await gameService.ProcessUserGuessAsync(guess with { UserId = user.Id });
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(409, ex.Message);
+        }
     }
 
     [HttpGet("leaderboard")]

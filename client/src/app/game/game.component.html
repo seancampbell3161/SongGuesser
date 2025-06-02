@@ -1,21 +1,32 @@
-<div class="game">
-    @if (songSvc.song()) {
+@if (songSvc.song()) {
+    <div class="game">
+
         <input type="text" pInputText [(ngModel)]="guess" placeholder="Guess song or artist" />
         <p-button 
-            (onClick)="gameSvc.sendGuess$.next(guess)"
+            (onClick)="gameSvc.sendGuess$.next(guess)" 
             label="Submit" 
             [raised]="true" 
-            severity="primary" 
+            severity="primary"
             [disabled]="guess.length === 0 || gameWon()"
         >
         </p-button>
         <p-button 
             (onClick)="songSvc.skipGuess$.next()" 
-            label="Skip"
+            label="Skip" 
             [raised]="true" 
-            severity="secondary" 
+            severity="secondary"
             [disabled]="songSvc.currentStepState() > 4 || gameWon()"
         >
         </p-button>
-    }
-</div>
+    </div>
+    <div class="game mt-4" style="display: none;">
+        <p-button
+            (onClick)="songSvc.loadRandomSong$.next()"
+            label="Random Song"
+            [raised]="true"
+            severity="primary"
+        >
+        </p-button>
+    </div>
+}
+

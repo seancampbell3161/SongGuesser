@@ -19,13 +19,14 @@ export class GameComponent {
 
   gameWon = input<boolean | undefined>();
 
-  guessResponse = toSignal(this.gameSvc.isGuessCorrect$.pipe(tap((isCorrect) => {
-    if (!isCorrect) {
-      this.songSvc.skipGuess$.next();
-      this.guess = '';
-    } else {
-      this.gameSvc.gameWon$.next(true);
-    }
+  guessResponse = toSignal(this.gameSvc.isGuessCorrect$.pipe(
+    tap((isCorrect) => {
+      if (!isCorrect) {
+        this.songSvc.skipGuess$.next();
+        this.guess = '';
+      } else {
+        this.gameSvc.gameWon$.next(true);
+      }
   })));
 
   guess: string = '';
