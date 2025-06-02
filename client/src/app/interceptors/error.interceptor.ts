@@ -8,7 +8,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(catchError((err) => {
     if (err instanceof HttpErrorResponse) {
-      if (err.status >= 400) {
+      if (err.status > 404) {
         let detail = 'An unexpected error occurred. Please try again later';
 
         if (err.message) {

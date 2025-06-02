@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { catchError, EMPTY, Subject, switchMap } from "rxjs";
+import { catchError, EMPTY, Observable, Subject, switchMap } from "rxjs";
 import { User } from "../user/user";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 
@@ -31,7 +31,7 @@ export class AuthService {
 
         this.login$.pipe(
             takeUntilDestroyed(),
-            switchMap((user) => this.http.post<{token: string}>(`${this.apiUrl}/auth/login`, user)),
+            switchMap((user) => this.http.post<{token: string}>(`${this.apiUrl}/auth/login`, user, { withCredentials: true })),
             catchError((err: HttpErrorResponse) => {
                 if (err.status === 401)
                     this.invalidLoginAttempt$.next(true);
@@ -47,7 +47,7 @@ export class AuthService {
 
         this.register$.pipe(
             takeUntilDestroyed(),
-            switchMap((user) => this.http.post<{ token: string }>(`${this.apiUrl}/auth/register`, user).pipe(
+            switchMap((user) => this.http.post<{ token: string }>(`${this.apiUrl}/auth/register`, user, { withCredentials: true }).pipe(
                 catchError((err: HttpErrorResponse) => {
                     if (err.status === 400)
                     this.invalidRegisterAttempt$.next(err.error);
@@ -61,6 +61,10 @@ export class AuthService {
                 this.invalidLoginAttempt$.next(false);
             }
         })
+    }
+
+    refreshToken(): Observable<string> {
+        return this.http.post<string>(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true });
     }
 
     clearToken() {

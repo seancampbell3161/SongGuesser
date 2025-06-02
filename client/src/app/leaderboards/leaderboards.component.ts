@@ -21,8 +21,4 @@ export default class LeaderboardsComponent {
     this.isDarkMode.set(isDarkMode);
   }
 
-  constructor() {
-    effect(() => console.log(this.leaderboard()));
-  }
-
 }
