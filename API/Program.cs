@@ -1,3 +1,5 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using API.Data.Repositories;
 using API.Extensions;
 using API.Interfaces;
@@ -11,6 +13,18 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddUserSecrets<Program>();
 }
+
+var awsCredentials = new BasicAWSCredentials(
+    builder.Configuration["SPACES_ACCESS_KEY"],
+    builder.Configuration["SPACES_SECRET_KEY"]);
+
+var spacesConfig = new AmazonS3Config
+{
+    ServiceURL = builder.Configuration["SPACES_SERVICE_URL"],
+    ForcePathStyle = true
+};
+
+builder.Services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(awsCredentials, spacesConfig));
 
 builder.Services.AddControllers();
 builder.Services.AddIdentityServices(builder.Configuration);
@@ -79,6 +93,7 @@ builder.Services.AddScoped<IWaveformService, WaveformService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 var app = builder.Build();
 
