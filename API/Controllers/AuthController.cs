@@ -123,7 +123,7 @@ public class AuthController(
         Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = true,
             SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddMonths(1)
         });
@@ -151,7 +151,7 @@ public class AuthController(
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(4),
+            expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

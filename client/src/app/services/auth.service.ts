@@ -63,11 +63,18 @@ export class AuthService {
         })
     }
 
-    refreshToken(): Observable<string> {
-        return this.http.post<string>(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true });
+    refreshToken(): Observable<{ token: string }> {
+        return this.http.post<{ token: string }>(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true });
     }
 
     clearToken() {
         this.authToken.set(null);
+    }
+
+    setToken(token: string) {
+        if (token) {
+            localStorage.setItem('token', token);
+            this.authToken.set(token);
+        }
     }
 }

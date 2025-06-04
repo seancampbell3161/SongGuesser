@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -91,11 +92,16 @@ public class MusicController(
     [HttpPost("convert-and-separate")]
     public async Task<IActionResult> ConvertAndSeparateAsync([FromBody] YouTubeRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Url)) return BadRequest("You must enter a URL");
+        if (string.IsNullOrWhiteSpace(request.Url)) return BadRequest("You must enter a Youtube URL");
         if (string.IsNullOrWhiteSpace(request.SongTitle)) return BadRequest("You must enter a song name");
         if (string.IsNullOrWhiteSpace(request.Artist)) return BadRequest("You must enter an Artist name");
 
-        var result = await audioService.ConvertAndSeparateTracksAsync(request.Url);
+        var url = request.Url.Trim();
+
+        if (!YouTubeValidator.IsValidYouTubeUrl(url))
+            return BadRequest("Link is not valid");
+
+        var result = await audioService.ConvertAndSeparateTracksAsync(url);
 
         if (result.Error != null)
         {

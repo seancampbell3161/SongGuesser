@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Interfaces;
-using BadHttpRequestException = Microsoft.AspNetCore.Server.IIS.BadHttpRequestException;
 
 namespace API.Services;
 
@@ -31,6 +30,11 @@ public class GameService(IGameRepository gameRepository) : IGameService
                 await gameRepository.AddUserScoreAsync(new UserResultDto(userGuess.UserId, score, (int)addGuess));
                 return isCorrect;
         }
+    }
+
+    public async Task<bool> ProcessAnonymousUserGuessAsync(UserGuessDto guess)
+    {
+        return await ValidateGuessAsync(guess.Guess);
     }
 
     private static int CalculateUserScore(int userGuessGuessNumber)

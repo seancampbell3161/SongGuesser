@@ -44,12 +44,15 @@ public class GameController(
     }
     
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> SubmitGuess(UserGuessDto guess)
     {
         var user = await userManager.GetUserAsync(HttpContext.User);
+        
         if (user == null)
         {
-            return Unauthorized();
+            var result = await gameService.ProcessAnonymousUserGuessAsync(guess);
+            return Ok(result);
         }
 
         try
